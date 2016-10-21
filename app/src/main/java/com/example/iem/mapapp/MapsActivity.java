@@ -15,12 +15,15 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.kml.KmlContainer;
 import com.google.maps.android.kml.KmlLayer;
+import com.google.maps.android.kml.KmlLineString;
 import com.google.maps.android.kml.KmlPlacemark;
 
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -38,6 +41,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
 
+    }
+
+
+
+    private KmlLineString getMarkers(KmlContainer layer){
+        KmlLineString retour=null;
+        if(layer.getPlacemarks().iterator().hasNext()) {
+            retour = (KmlLineString) layer.getPlacemarks().iterator().next().getGeometry();
+           // System.out.println("INFO:"+layer.getPlacemarks().iterator().next().getGeometry().toString());
+        }
+        else {
+            if (layer.getContainers().iterator().hasNext()) {
+                getMarkers(layer.getContainers().iterator().next());
+            }
+            else{
+                System.out.println("Il n'y a pas de markers !!");
+            }
+        }
+
+        return retour;
     }
 
 
@@ -61,23 +84,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLng(bourgEnBresse));
         checkPermission();
 
+        ArrayList<ArrayList<LatLng>> markersList = new ArrayList<>();
+
         try {
-            KmlLayer layer = new KmlLayer(mMap, R.raw.ligne1, getApplicationContext());
+            KmlLayer layer = new KmlLayer(mMap, R.raw.ligne2norelan, getApplicationContext());
 
             layer.addLayerToMap();
             KmlPlacemark k;
             Iterable<KmlPlacemark> markers;
-/*
-            final Kml kml = Kml.unmarshal(new File("HelloKml.kml"));
-            final Placemark placemark = (Placemark) kml.getFeature();
-            Point point = (Point) placemark.getGeometry();
-            List<Coordinate> coordinates = point.getCoordinates();
-            for (Coordinate coordinate : coordinates) {
-                    System.out.println(coordinate.getLatitude());
-                    System.out.println(coordinate.getLongitude());
-                    System.out.println(coordinate.getAltitude());
-            }
-*/
+          //  KmlLineString geo=getMarkers(layer.getContainers().iterator().next());
+          // System.out.println("INFO"+geo.getGeometryObject().size());
+
+           KmlLineString geo2 = (KmlLineString) layer.getContainers().iterator().next().getPlacemarks().iterator().next().getGeometry();
+
+            ArrayList<LatLng> stopList = geo2.getGeometryObject();
+
+           
+
+
+
+
+
+
         } catch (XmlPullParserException e) {
             e.printStackTrace();
         } catch (IOException e) {
