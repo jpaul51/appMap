@@ -88,19 +88,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         try {
             KmlLayer layer = new KmlLayer(mMap, R.raw.ligne2norelan, getApplicationContext());
-
+            System.out.println("ITEMS:"+ layer.getContainers().iterator().next().getProperties().iterator().next());
             layer.addLayerToMap();
             KmlPlacemark k;
             Iterable<KmlPlacemark> markers;
-          //  KmlLineString geo=getMarkers(layer.getContainers().iterator().next());
+            KmlLineString geo=getMarkers(layer.getContainers().iterator().next());
           // System.out.println("INFO"+geo.getGeometryObject().size());
 
-           KmlLineString geo2 = (KmlLineString) layer.getContainers().iterator().next().getPlacemarks().iterator().next().getGeometry();
+         //  KmlLineString geo2 = (KmlLineString) layer.getContainers().iterator().next().getPlacemarks().iterator().next().getGeometry();
 
-            ArrayList<LatLng> stopList = geo2.getGeometryObject();
+            ArrayList<LatLng> stopList = geo.getGeometryObject();
 
-           
-
+            mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
 
 
 
