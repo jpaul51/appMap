@@ -4,6 +4,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.joda.time.LocalDateTime;
+
 import java.util.ArrayList;
 
 /**
@@ -38,10 +40,17 @@ public class BusLign   {
             opt.position(position);
             opt.title(title);
             String oldSnippet="";
+
+            LocalDateTime localDateTime = new LocalDateTime();
+
+
             for(int w=0;w<stops.get(j).getScheduleList().size();w++){
                 if (opt.getSnippet()!= null)
                  oldSnippet= opt.getSnippet();
-               opt.snippet(oldSnippet+String.valueOf(stops.get(j).getScheduleList().get(w).getSchedule().getHourOfDay())+":"+String.valueOf(stops.get(j).getScheduleList().get(w).getSchedule().getMinuteOfHour())+"\n");
+                
+                if(stops.get(j).getScheduleList().get(w).getSchedule().getHourOfDay() >= localDateTime.getHourOfDay()  )
+                    if(stops.get(j).getScheduleList().get(w).getSchedule().getMinuteOfHour() >= localDateTime.getMinuteOfHour())
+                        opt.snippet(oldSnippet+String.valueOf(stops.get(j).getScheduleList().get(w).getSchedule().getHourOfDay())+":"+String.valueOf(stops.get(j).getScheduleList().get(w).getSchedule().getMinuteOfHour())+"\n");
             }
 
             mMap.addMarker(opt);
