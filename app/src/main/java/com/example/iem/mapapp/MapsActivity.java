@@ -3,7 +3,6 @@ package com.example.iem.mapapp;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
@@ -14,9 +13,11 @@ import com.example.iem.mapapp.Model.BusStop;
 import com.example.iem.mapapp.Model.Schedule;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.kml.KmlContainer;
 import com.google.maps.android.kml.KmlLayer;
@@ -32,23 +33,32 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends AbstractMapActivity   implements
+        OnMapReadyCallback, OnInfoWindowClickListener {
 
     private GoogleMap mMap;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
+    private Boolean needsInit=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        if (readyToGo()) {
+            setContentView(R.layout.activity_maps);
 
+            MapFragment mapFrag=
+                    (MapFragment)getFragmentManager().findFragmentById(R.id.map);
 
+            if (savedInstanceState == null) {
+                needsInit=true;
+            }
+
+            mapFrag.getMapAsync(this);
+        }
     }
+
+
 
 
 
@@ -237,7 +247,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // Show rationale and request permission.
             Log.d("Erreur Permission","Permission de localisation");
         }
+        mMap.setInfoWindowAdapter(new PopupAdapter(getLayoutInflater()));
+        mMap.setOnInfoWindowClickListener(this);
+    }
+    private void addMarker(GoogleMap map, double lat, double lon,
+                           int title, int snippet) {
+        map.addMarker(new MarkerOptions().position(new LatLng(lat, lon))
+                .title(getString(title))
+                .snippet(getString(snippet)));
     }
 
 
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+
+    }
 }
