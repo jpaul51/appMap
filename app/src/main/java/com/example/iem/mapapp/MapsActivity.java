@@ -9,6 +9,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.widget.ListView;
 
+import com.example.iem.mapapp.Model.BusLign;
+import com.example.iem.mapapp.Model.BusStop;
+import com.example.iem.mapapp.Model.Schedule;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -124,9 +127,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(stopList.get(0),zoomLevel));
 
 
-                mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
+
+                ArrayList<Schedule> schedule = new ArrayList<>();
+
+                ArrayList<BusStop> firstDirectionStops =  new ArrayList<>();
+                ArrayList<BusStop> secondDirectionStops =  new ArrayList<>();
+
+                for(int j=0; j<stopList.size();j++)
+                {
+                    BusStop stop = new BusStop(stopList.get(j),"nom",schedule);
+                    firstDirectionStops.add(stop);
+
+                }
 
 
+
+                BusLign line = new BusLign(linesName.get(i),firstDirectionStops,secondDirectionStops);
 
 
 

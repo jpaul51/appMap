@@ -1,7 +1,5 @@
 package com.example.iem.mapapp.Model;
 
-import android.graphics.Color;
-
 import java.util.ArrayList;
 
 /**
@@ -14,13 +12,12 @@ public class BusLign   {
     ArrayList<BusStop> firstDirectionStops;
     ArrayList<BusStop> secondDirectionStops;
     boolean firstDirection;
-    Color color;
 
 
-    public BusLign(ArrayList<BusStop> firstDirectionStops, ArrayList<BusStop> secondDirectionStops,Color color) {
+    public BusLign(String name,ArrayList<BusStop> firstDirectionStops, ArrayList<BusStop> secondDirectionStops) {
+        this.name=name;
         this.firstDirectionStops = firstDirectionStops;
         this.secondDirectionStops = secondDirectionStops;
-        this.color=color;
     }
 
 
