@@ -78,6 +78,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+
         // Add a marker in Sydney and move the camera
 
         LatLng bourgEnBresse = new LatLng(46.2052, 5.2255);
@@ -115,7 +116,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 //  KmlLineString geo2 = (KmlLineString) layer.getContainers().iterator().next().getPlacemarks().iterator().next().getGeometry();
 
+
                 ArrayList<LatLng> stopList = geo.getGeometryObject();
+
+            mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
+            float zoomLevel = 12.0f;
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(stopList.get(0),zoomLevel));
+
 
                 mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
 
