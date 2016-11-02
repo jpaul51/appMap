@@ -47,7 +47,7 @@ public class BusLign   {
             for(int w=0;w<stops.get(j).getScheduleList().size();w++){
                 if (opt.getSnippet()!= null)
                  oldSnippet= opt.getSnippet();
-                
+
                 if(stops.get(j).getScheduleList().get(w).getSchedule().getHourOfDay() >= localDateTime.getHourOfDay()  )
                     if(stops.get(j).getScheduleList().get(w).getSchedule().getMinuteOfHour() >= localDateTime.getMinuteOfHour())
                         opt.snippet(oldSnippet+String.valueOf(stops.get(j).getScheduleList().get(w).getSchedule().getHourOfDay())+":"+String.valueOf(stops.get(j).getScheduleList().get(w).getSchedule().getMinuteOfHour())+"\n");

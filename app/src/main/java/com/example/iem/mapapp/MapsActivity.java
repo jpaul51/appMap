@@ -40,6 +40,7 @@ public class MapsActivity extends AbstractMapActivity   implements
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private Boolean needsInit=false;
+    private ArrayList<BusLign> lines = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +93,7 @@ public class MapsActivity extends AbstractMapActivity   implements
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-       ArrayList<BusLign> lines = new ArrayList<>();
+
 
         mMap = googleMap;
 
@@ -117,12 +118,36 @@ public class MapsActivity extends AbstractMapActivity   implements
 
         ArrayList<ArrayList<LatLng>> markersList = new ArrayList<>();
 
-        for(int i=0;i<linesName.size();i++)
+        displayMarkers(linesName);
+
+        //Adding markers to eachline
+
+        for(int i=0; i < lines.size(); i++){
+
+            BusLign.putStopsOnMap(lines.get(i).getFirstDirectionStops(),mMap);
+            BusLign.putStopsOnMap(lines.get(i).getSecondDirectionStops(),mMap);
+
+
+
+        }
+
+
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+
+
+    }
+
+    private void displayMarkers(ArrayList<String> linesToDisplay)
+    {
+        for(int i=0;i<linesToDisplay.size();i++)
         {
             try {
 
                 InputStream ins = getResources().openRawResource(
-                        getResources().getIdentifier(linesName.get(i),
+                        getResources().getIdentifier(linesToDisplay.get(i),
                                 "raw", getPackageName()));
 
                 KmlLayer layer = new KmlLayer(mMap, ins, getApplicationContext());
@@ -139,9 +164,9 @@ public class MapsActivity extends AbstractMapActivity   implements
 
                 ArrayList<LatLng> pointsList = geo.getGeometryObject();
 
-           // mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
-            float zoomLevel = 12.0f;
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pointsList.get(0),zoomLevel));
+                // mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
+                float zoomLevel = 12.0f;
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pointsList.get(0),zoomLevel));
 
 
 
@@ -174,7 +199,7 @@ public class MapsActivity extends AbstractMapActivity   implements
 
 
 
-                BusLign line = new BusLign(linesName.get(i),firstDirectionStops,secondDirectionStops);
+                BusLign line = new BusLign(linesToDisplay.get(i),firstDirectionStops,secondDirectionStops);
 
                 lines.add(line);
 
@@ -187,28 +212,7 @@ public class MapsActivity extends AbstractMapActivity   implements
                 e.printStackTrace();
             }
         }
-
-        //Adding markers to eachline
-
-        for(int i=0; i < lines.size(); i++){
-
-            BusLign.putStopsOnMap(lines.get(i).getFirstDirectionStops(),mMap);
-            BusLign.putStopsOnMap(lines.get(i).getSecondDirectionStops(),mMap);
-
-
-
-        }
-
-
-
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-
-
-
     }
-
-
 
     private void checkPermission(){
 
