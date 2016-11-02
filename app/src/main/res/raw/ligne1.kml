@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <kml xmlns='http://www.opengis.net/kml/2.2'>
 		<Document>
-			<name>Mon parcours</name>
-			<description>Itinéraire importé depuis le site www.calculitineraires.fr</description>
+			<name>ligne1</name>
+			<description>Itinï¿½raire importï¿½ depuis le site www.calculitineraires.fr</description>
 			<Style id='LineGreenPoly'>
 				<LineStyle>
 					<color>ff0000ff</color>
@@ -14,7 +14,7 @@
 			</Style>
 			<Placemark>
 				<name>Mon parcours</name>
-				<description>Itinéraire importé depuis le site www.calculitineraires.fr</description>
+				<description>Itinï¿½raire importï¿½ depuis le site www.calculitineraires.fr</description>
 				<styleUrl>#LineGreenPoly</styleUrl>
 				<LineString>
 					<extrude>1</extrude>

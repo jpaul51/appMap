@@ -23,6 +23,7 @@ import com.google.maps.android.kml.KmlPlacemark;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -77,6 +78,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+
         // Add a marker in Sydney and move the camera
 
         LatLng bourgEnBresse = new LatLng(46.2052, 5.2255);
@@ -84,32 +86,60 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLng(bourgEnBresse));
         checkPermission();
 
+        ArrayList<String> linesName= new ArrayList<>();
+        //dev
+        linesName.add("ligne1");
+      //  linesName.add("ligne21");
+        linesName.add("ligne2ainterexpo");
+        linesName.add("ligne2norelan");
+        linesName.add("ligne3");
+        linesName.add("ligne4");
+
+        //endDev
+
         ArrayList<ArrayList<LatLng>> markersList = new ArrayList<>();
 
-        try {
-            KmlLayer layer = new KmlLayer(mMap, R.raw.ligne2norelan, getApplicationContext());
-            System.out.println("ITEMS:"+ layer.getContainers().iterator().next().getProperties().iterator().next());
-            layer.addLayerToMap();
-            KmlPlacemark k;
-            Iterable<KmlPlacemark> markers;
-            KmlLineString geo=getMarkers(layer.getContainers().iterator().next());
-          // System.out.println("INFO"+geo.getGeometryObject().size());
+        for(int i=0;i<linesName.size();i++)
+        {
+            try {
+                InputStream ins = getResources().openRawResource(
+                        getResources().getIdentifier(linesName.get(i),
+                                "raw", getPackageName()));
+                KmlLayer layer = new KmlLayer(mMap, ins, getApplicationContext());
+                System.out.println("ITEMS:"+ layer.getContainers().iterator().next().getProperties().iterator().next());
 
-         //  KmlLineString geo2 = (KmlLineString) layer.getContainers().iterator().next().getPlacemarks().iterator().next().getGeometry();
+                layer.addLayerToMap();
+                KmlPlacemark k;
+                Iterable<KmlPlacemark> markers;
+                KmlLineString geo=getMarkers(layer.getContainers().iterator().next());
+                // System.out.println("INFO"+geo.getGeometryObject().size());
 
-            ArrayList<LatLng> stopList = geo.getGeometryObject();
+                //  KmlLineString geo2 = (KmlLineString) layer.getContainers().iterator().next().getPlacemarks().iterator().next().getGeometry();
+
+
+                ArrayList<LatLng> stopList = geo.getGeometryObject();
 
             mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
+            float zoomLevel = 12.0f;
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(stopList.get(0),zoomLevel));
+
+
+                mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
 
 
 
 
 
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            } catch (XmlPullParserException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
+
+
+
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);

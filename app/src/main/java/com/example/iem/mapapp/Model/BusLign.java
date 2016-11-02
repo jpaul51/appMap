@@ -22,4 +22,12 @@ public class BusLign   {
         this.secondDirectionStops = secondDirectionStops;
         this.color=color;
     }
+
+
+
+
+
+
+
+
 }
