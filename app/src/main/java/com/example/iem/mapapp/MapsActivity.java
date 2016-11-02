@@ -23,6 +23,9 @@ import com.google.maps.android.kml.KmlLayer;
 import com.google.maps.android.kml.KmlLineString;
 import com.google.maps.android.kml.KmlPlacemark;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
@@ -79,6 +82,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+       ArrayList<BusLign> lines = new ArrayList<>();
+
         mMap = googleMap;
 
 
@@ -105,9 +110,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         for(int i=0;i<linesName.size();i++)
         {
             try {
+
                 InputStream ins = getResources().openRawResource(
                         getResources().getIdentifier(linesName.get(i),
                                 "raw", getPackageName()));
+
                 KmlLayer layer = new KmlLayer(mMap, ins, getApplicationContext());
                 System.out.println("ITEMS:"+ layer.getContainers().iterator().next().getProperties().iterator().next());
 
@@ -120,29 +127,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //  KmlLineString geo2 = (KmlLineString) layer.getContainers().iterator().next().getPlacemarks().iterator().next().getGeometry();
 
 
-                ArrayList<LatLng> stopList = geo.getGeometryObject();
+                ArrayList<LatLng> pointsList = geo.getGeometryObject();
 
-            mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
+           // mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
             float zoomLevel = 12.0f;
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(stopList.get(0),zoomLevel));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pointsList.get(0),zoomLevel));
 
 
 
-                ArrayList<Schedule> schedule = new ArrayList<>();
 
                 ArrayList<BusStop> firstDirectionStops =  new ArrayList<>();
                 ArrayList<BusStop> secondDirectionStops =  new ArrayList<>();
 
-                for(int j=0; j<stopList.size();j++)
-                {
-                    BusStop stop = new BusStop(stopList.get(j),"nom",schedule);
-                    firstDirectionStops.add(stop);
 
-                }
+                //Construction données test
+
+
+                String dateExemple ="09:15";
+                String dateExemple2 ="17:45";
+
+                DateTimeFormatter format = DateTimeFormat.forPattern("HH:mm");
+                DateTime extractedTime = format.parseDateTime(dateExemple);
+                DateTime extractedTime2 = format.parseDateTime(dateExemple2);
+
+                ArrayList<Schedule> scheduleList = new ArrayList<>();
+                scheduleList.add(new Schedule(extractedTime,false));
+                scheduleList.add(new Schedule(extractedTime2,false));
+
+                firstDirectionStops.add(new BusStop(new LatLng(46.2073652781729,5.227577090263367),"gare",scheduleList));
+                secondDirectionStops.add(new BusStop(new LatLng(46.20518602822019,5.227196216583252),"gare2",scheduleList));
+
+                //Fin construction
+
+
+
 
 
 
                 BusLign line = new BusLign(linesName.get(i),firstDirectionStops,secondDirectionStops);
+
+                lines.add(line);
+
 
 
 
@@ -153,7 +178,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
 
+        //Adding markers to eachline
 
+        for(int i=0; i < lines.size(); i++){
+
+            BusLign.putStopsOnMap(lines.get(i).getFirstDirectionStops(),mMap);
+            BusLign.putStopsOnMap(lines.get(i).getSecondDirectionStops(),mMap);
+
+
+
+        }
 
 
 
