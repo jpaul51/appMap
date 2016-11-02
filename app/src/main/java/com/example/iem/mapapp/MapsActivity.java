@@ -1,6 +1,7 @@
 package com.example.iem.mapapp;
 
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -77,6 +78,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+
         // Add a marker in Sydney and move the camera
 
         LatLng bourgEnBresse = new LatLng(46.2052, 5.2255);
@@ -100,6 +102,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ArrayList<LatLng> stopList = geo.getGeometryObject();
 
             mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
+            float zoomLevel = 12.0f;
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(stopList.get(0),zoomLevel));
 
 
 
