@@ -3,7 +3,6 @@ package com.example.iem.mapapp.Model;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * Created by iem on 21/10/2016.
@@ -13,10 +12,10 @@ public class BusStop {
 
     LatLng position;
     String name;
-    ArrayList<Date> schedule;
+    ArrayList<Schedule> schedule;
 
 
-    public BusStop(LatLng position, String name, ArrayList<Date> schedule) {
+    public BusStop(LatLng position, String name, ArrayList<Schedule> schedule) {
         this.position = position;
         this.name = name;
         this.schedule = schedule;
@@ -39,11 +38,11 @@ public class BusStop {
         this.name = name;
     }
 
-    public ArrayList<Date> getSchedule() {
+    public ArrayList<Schedule> getSchedule() {
         return schedule;
     }
 
-    public void setSchedule(ArrayList<Date> schedule) {
+    public void setSchedule(ArrayList<Schedule> schedule) {
         this.schedule = schedule;
     }
 }
