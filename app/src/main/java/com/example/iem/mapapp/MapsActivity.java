@@ -11,6 +11,7 @@ import android.widget.ListView;
 import com.example.iem.mapapp.Model.BusLign;
 import com.example.iem.mapapp.Model.BusStop;
 import com.example.iem.mapapp.Model.Schedule;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
@@ -29,8 +30,10 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class MapsActivity extends AbstractMapActivity   implements
@@ -104,6 +107,31 @@ public class MapsActivity extends AbstractMapActivity   implements
         mMap.addMarker(new MarkerOptions().position(bourgEnBresse).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(bourgEnBresse));
         checkPermission();
+
+        InputStream ins = getResources().openRawResource(
+                getResources().getIdentifier("data",
+                        "raw", getPackageName()));
+
+        StringBuilder builder =new StringBuilder();
+        BufferedReader bReader = new BufferedReader(new InputStreamReader(ins));
+        String line="";
+        try {
+            while ((line = bReader.readLine()) != null) {
+                builder.append(line);
+            }
+       System.out.println("----------------------");
+        System.out.println(line);
+            System.out.println(builder.toString());
+        //create ObjectMapper instance
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        //convert json string to object
+
+           // BusLign emp = objectMapper.readValue(line, BusLign.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         ArrayList<String> linesName= new ArrayList<>();
         //dev

@@ -17,6 +17,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+    }
 }
 
 dependencies {
@@ -30,6 +35,13 @@ dependencies {
     compile 'com.google.maps.android:android-maps-utils:0.4+'
     compile 'joda-time:joda-time:2.4'
     compile 'joda-time:joda-time:2.2'
-    compile 'com.opencsv:opencsv:3.7'
+    //compile 'com.opencsv:opencsv:3.7'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.8.4'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.4'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.4'
+
+
     testCompile 'junit:junit:4.12'
 }
+
+
