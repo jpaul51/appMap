@@ -127,7 +127,7 @@ public class MapsActivity extends AbstractMapActivity   implements
 
         //convert json string to object
 
-           // BusLign emp = objectMapper.readValue(line, BusLign.class);
+           // BusLign emp = objectMapper.readValue(builder.toString(), BusLign.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -152,8 +152,8 @@ public class MapsActivity extends AbstractMapActivity   implements
 
         for(int i=0; i < lines.size(); i++){
 
-            BusLign.putStopsOnMap(lines.get(i).getFirstDirectionStops(),mMap);
-            BusLign.putStopsOnMap(lines.get(i).getSecondDirectionStops(),mMap);
+            BusLign.putStopsOnMap(lines.get(i).getstops(),mMap);
+
 
 
 

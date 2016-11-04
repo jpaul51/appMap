@@ -14,20 +14,30 @@ import java.util.ArrayList;
 
 public class BusLign   {
 
-    String name;
-    ArrayList<BusStop> firstDirectionStops;
-    ArrayList<BusStop> secondDirectionStops;
-    boolean firstDirection;
+    String label;
+    int number;
+    String color;
+    int order;
+    String traceFile;
+    ArrayList<BusStop> stops;
+   
 
 
-    public BusLign(String name,ArrayList<BusStop> firstDirectionStops, ArrayList<BusStop> secondDirectionStops) {
-        this.name=name;
-        this.firstDirectionStops = firstDirectionStops;
-        this.secondDirectionStops = secondDirectionStops;
+
+    public BusLign(String label,ArrayList<BusStop> stops, ArrayList<BusStop> secondDirectionStops) {
+        this.label=label;
+        this.stops = stops;
+       
     }
 
-
-
+    public BusLign(String label, int number, String color, int order, String traceFile, ArrayList<BusStop> stops) {
+        this.label = label;
+        this.number = number;
+        this.color = color;
+        this.order = order;
+        this.traceFile = traceFile;
+        this.stops = stops;
+    }
 
     static public void putStopsOnMap(ArrayList<BusStop> stops, GoogleMap mMap){
         for (int j=0;j<stops.size();j++) {
@@ -68,37 +78,52 @@ public class BusLign   {
 
 
 
-    public String getName() {
-        return name;
+    public String getLabel() {
+        return label;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setLabel(String label) {
+        this.label = label;
+    }
+    
+
+    public ArrayList<BusStop> getstops() {
+        return stops;
     }
 
-    public boolean isFirstDirection() {
-        return firstDirection;
+    public void setstops(ArrayList<BusStop> stops) {
+        this.stops = stops;
     }
 
-    public void setFirstDirection(boolean firstDirection) {
-        this.firstDirection = firstDirection;
+    public int getNumber() {
+        return number;
     }
 
-    public ArrayList<BusStop> getSecondDirectionStops() {
-        return secondDirectionStops;
+    public void setNumber(int number) {
+        this.number = number;
     }
 
-    public void setSecondDirectionStops(ArrayList<BusStop> secondDirectionStops) {
-        this.secondDirectionStops = secondDirectionStops;
+    public String getColor() {
+        return color;
     }
 
-    public ArrayList<BusStop> getFirstDirectionStops() {
-        return firstDirectionStops;
+    public void setColor(String color) {
+        this.color = color;
     }
 
-    public void setFirstDirectionStops(ArrayList<BusStop> firstDirectionStops) {
-        this.firstDirectionStops = firstDirectionStops;
+    public int getOrder() {
+        return order;
     }
 
+    public void setOrder(int order) {
+        this.order = order;
+    }
 
+    public String getTraceFile() {
+        return traceFile;
+    }
+
+    public void setTraceFile(String traceFile) {
+        this.traceFile = traceFile;
+    }
 }

@@ -11,7 +11,7 @@
 			"name": "Baudin",
 			"latitude": 46.200648,
 			"longitude": 5.218698,
-			"schedule": "horaire_1_norelan_moliere.csv"
+			"scheduleFile": "horaire_1_norelan_moliere.csv"
 		}, {
 			"id": 2,
 			"name": "Abb\u00e9 Gringoz",
