@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <group android:checkableBehavior="all" android:title="Lignes">
+            <item
+                android:id="@+id/displayLine1"
+                android:title="Ligne 1"
+                app:actionLayout="@layout/layout_for_item_menu"/>
+            <item
+                android:id="@+id/displayLine2"
+                android:title="Ligne 2"
+                app:actionLayout="@layout/layout_for_item_menu"/>
+            <item
+                android:id="@+id/displayLine3"
+                android:title="Ligne 3"
+                app:actionLayout="@layout/layout_for_item_menu"/>
+            <item
+                android:id="@+id/displayLine4"
+                android:title="Ligne 4"
+                app:actionLayout="@layout/layout_for_item_menu"/>
+            <item
+                android:id="@+id/displayLine5"
+                android:title="Ligne 5"
+                app:actionLayout="@layout/layout_for_item_menu"/>
+            <item
+                android:id="@+id/displayLine6"
+                android:title="Ligne 6"
+                app:actionLayout="@layout/layout_for_item_menu"/>
+            <item
+                android:id="@+id/displayLine7"
+                android:title="Ligne 7"
+                app:actionLayout="@layout/layout_for_item_menu"/>
+            <item
+                android:id="@+id/displayLine8"
+                android:title="Ligne 8"
+                app:actionLayout="@layout/layout_for_item_menu"/>
+        </group>
+</menu>
