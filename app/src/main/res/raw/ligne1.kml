@@ -5,7 +5,7 @@
 			<description>Itin�raire import� depuis le site www.calculitineraires.fr</description>
 			<Style id='LineGreenPoly'>
 				<LineStyle>
-					<color>ff0000ff</color>
+					<color>50F04614</color>
 					<width>4</width>
 				</LineStyle>
 				<PolyStyle>

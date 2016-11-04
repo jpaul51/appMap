@@ -1,9 +1,9 @@
 package com.example.iem.mapapp;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -14,10 +14,10 @@ import com.google.android.gms.common.GoogleApiAvailability;
  */
 
 
-public class AbstractMapActivity extends Activity {
+public class AbstractMapActivity extends AppCompatActivity {
     static final String TAG_ERROR_DIALOG_FRAGMENT="errorDialog";
 
-
+    private  Context context;
 
 
 

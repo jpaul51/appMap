@@ -2,10 +2,18 @@ package com.example.iem.mapapp;
 
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
+import android.widget.ExpandableListAdapter;
+import android.widget.ExpandableListView;
 import android.widget.ListView;
 
 import com.example.iem.mapapp.Model.BusLign;
@@ -17,6 +25,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -35,34 +44,109 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-public class MapsActivity extends AbstractMapActivity   implements
-        OnMapReadyCallback, OnInfoWindowClickListener {
+
+public class MapsActivity extends AbstractMapActivity
+        implements NavigationView.OnNavigationItemSelectedListener , OnMapReadyCallback,OnInfoWindowClickListener {
+
 
     private GoogleMap mMap;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
+
     private Boolean needsInit=false;
     private ArrayList<BusLign> lines = new ArrayList<>();
+
+    private Toolbar toolbar;
+
+    ExpandableListAdapter listAdapter;
+    ExpandableListView expListView;
+    List<String> listDataHeader;
+    HashMap<String, List<String>> listDataChild;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (readyToGo()) {
-            setContentView(R.layout.activity_maps);
 
-            MapFragment mapFrag=
-                    (MapFragment)getFragmentManager().findFragmentById(R.id.map);
+            if (readyToGo()) {
+                setContentView(R.layout.activity_main);
+                toolbar = (Toolbar) findViewById(R.id.toolbar);
+                toolbar.setTitle("All");
+                setSupportActionBar(toolbar);
 
-            if (savedInstanceState == null) {
-                needsInit=true;
+
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                        this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                drawer.setDrawerListener(toggle);
+                toggle.syncState();
+
+                NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                navigationView.setNavigationItemSelectedListener(this);
+
+                menuListInit();
+                expListView = (ExpandableListView) findViewById(R.id.ExpandableList);
+
+                listAdapter = new ExpandableListAdapterPerso(this, listDataHeader, listDataChild);
+                expListView.setAdapter(listAdapter);
+
+
+                // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+                SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.map);
+
+                if (savedInstanceState == null) {
+                    needsInit=true;
+                }
+                mapFragment.getMapAsync(this);
             }
+    }
 
-            mapFrag.getMapAsync(this);
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
         }
     }
 
+    private void menuListInit(){
+        listDataHeader = new ArrayList<String>();
+        listDataChild = new HashMap<String, List<String>>();
 
+        listDataHeader.add("Ligne");
+        List<String> listLine = new ArrayList<String>();
+        listLine.add("Ligne 1");
+        listLine.add("Ligne 2");
+        listLine.add("Ligne 3");
+        listLine.add("Ligne 4");
+        listLine.add("Ligne 5");
+        listLine.add("Ligne 6");
+        listLine.add("Ligne 7");
+        listLine.add("Ligne 8");
+
+        listDataChild.put(listDataHeader.get(0),listLine);
+
+    }
+
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+
+        /*DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);*/
+        return true;
+    }
 
 
 
@@ -70,7 +154,7 @@ public class MapsActivity extends AbstractMapActivity   implements
         KmlLineString retour=null;
         if(layer.getPlacemarks().iterator().hasNext()) {
             retour = (KmlLineString) layer.getPlacemarks().iterator().next().getGeometry();
-           // System.out.println("INFO:"+layer.getPlacemarks().iterator().next().getGeometry().toString());
+            // System.out.println("INFO:"+layer.getPlacemarks().iterator().next().getGeometry().toString());
         }
         else {
             if (layer.getContainers().iterator().hasNext()) {
@@ -83,6 +167,8 @@ public class MapsActivity extends AbstractMapActivity   implements
 
         return retour;
     }
+
+
 
 
     /**
@@ -136,7 +222,7 @@ public class MapsActivity extends AbstractMapActivity   implements
         ArrayList<String> linesName= new ArrayList<>();
         //dev
         linesName.add("ligne1");
-      //  linesName.add("ligne21");
+        //  linesName.add("ligne21");
         linesName.add("ligne2ainterexpo");
         linesName.add("ligne2norelan");
         linesName.add("ligne3");
@@ -192,10 +278,13 @@ public class MapsActivity extends AbstractMapActivity   implements
 
                 ArrayList<LatLng> pointsList = geo.getGeometryObject();
 
-                // mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
-                float zoomLevel = 12.0f;
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pointsList.get(0),zoomLevel));
 
+
+
+
+                float zoomLevel = 12.25f;
+                LatLng centerOfBourg = new LatLng(46.202181, 5.237056);
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerOfBourg,zoomLevel));
 
 
 
@@ -277,8 +366,10 @@ public class MapsActivity extends AbstractMapActivity   implements
             mMap.setMyLocationEnabled(true);
             Log.d("SUCCESS","Permission de localisation");
         } else {
-            // Show rationale and request permission.
             Log.d("Erreur Permission","Permission de localisation");
+            float zoomLevel = 12.25f;
+            LatLng centerOfBourg = new LatLng(46.202181, 5.237056);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerOfBourg,zoomLevel));
         }
         mMap.setInfoWindowAdapter(new PopupAdapter(getLayoutInflater()));
         mMap.setOnInfoWindowClickListener(this);
@@ -291,8 +382,10 @@ public class MapsActivity extends AbstractMapActivity   implements
     }
 
 
+
     @Override
     public void onInfoWindowClick(Marker marker) {
 
     }
+
 }
