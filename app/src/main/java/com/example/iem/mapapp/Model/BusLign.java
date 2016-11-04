@@ -48,9 +48,15 @@ public class BusLign   {
                 if (opt.getSnippet()!= null)
                  oldSnippet= opt.getSnippet();
 
-                if(stops.get(j).getScheduleList().get(w).getSchedule().getHourOfDay() >= localDateTime.getHourOfDay()  )
-                    if(stops.get(j).getScheduleList().get(w).getSchedule().getMinuteOfHour() >= localDateTime.getMinuteOfHour())
-                        opt.snippet(oldSnippet+String.valueOf(stops.get(j).getScheduleList().get(w).getSchedule().getHourOfDay())+":"+String.valueOf(stops.get(j).getScheduleList().get(w).getSchedule().getMinuteOfHour())+"\n");
+                if(stops.get(j).getScheduleList().get(w).getSchedule().getHourOfDay() == localDateTime.getHourOfDay()  ) {
+                    if (stops.get(j).getScheduleList().get(w).getSchedule().getMinuteOfHour() > localDateTime.getMinuteOfHour()) {
+                        opt.snippet(oldSnippet + String.valueOf(stops.get(j).getScheduleList().get(w).getSchedule().getHourOfDay()) + ":" + String.valueOf(stops.get(j).getScheduleList().get(w).getSchedule().getMinuteOfHour()) + "\n");
+                    }
+
+                }
+                else if(stops.get(j).getScheduleList().get(w).getSchedule().getHourOfDay() > localDateTime.getHourOfDay()  ) {
+                    opt.snippet(oldSnippet + String.valueOf(stops.get(j).getScheduleList().get(w).getSchedule().getHourOfDay()) + ":" + String.valueOf(stops.get(j).getScheduleList().get(w).getSchedule().getMinuteOfHour()) + "\n");
+                }
             }
 
             mMap.addMarker(opt);

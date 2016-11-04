@@ -184,6 +184,7 @@ public class MapsActivity extends AbstractMapActivity   implements
                 DateTimeFormatter format = DateTimeFormat.forPattern("HH:mm");
                 DateTime extractedTime = format.parseDateTime(dateExemple);
                 DateTime extractedTime2 = format.parseDateTime(dateExemple2);
+                //System.out.println(extractedTime.getHourOfDay()+" : "+ extractedTime.getMinuteOfHour());
 
                 ArrayList<Schedule> scheduleList = new ArrayList<>();
                 scheduleList.add(new Schedule(extractedTime,false));
