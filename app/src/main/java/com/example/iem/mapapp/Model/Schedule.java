@@ -1,6 +1,6 @@
 package com.example.iem.mapapp.Model;
 
-import java.util.Date;
+import org.joda.time.DateTime;
 
 /**
  * Created by iem on 02/11/2016.
@@ -8,23 +8,23 @@ import java.util.Date;
 
 public class Schedule {
 
-    Date schedule;
+    DateTime schedule;
     boolean isVacation;
 
 
     public Schedule(){}
 
-    public Schedule(Date schedule, boolean isVacation) {
+    public Schedule(DateTime schedule, boolean isVacation) {
         this.schedule = schedule;
         this.isVacation = isVacation;
     }
 
 
-    public Date getSchedule() {
+    public DateTime getSchedule() {
         return schedule;
     }
 
-    public void setSchedule(Date schedule) {
+    public void setSchedule(DateTime schedule) {
         this.schedule = schedule;
     }
 

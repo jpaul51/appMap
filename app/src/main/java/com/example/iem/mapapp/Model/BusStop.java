@@ -12,15 +12,28 @@ public class BusStop {
 
     LatLng position;
     String name;
-    ArrayList<Schedule> schedule;
+    String scheduleFile;
+    ArrayList<Schedule> scheduleList;
 
+    public BusStop(LatLng position, String name, String scheduleFile) {
+        this.position = position;
+        this.name = name;
+        this.scheduleFile = scheduleFile;
+    }
 
     public BusStop(LatLng position, String name, ArrayList<Schedule> schedule) {
         this.position = position;
         this.name = name;
-        this.schedule = schedule;
+        this.scheduleList = schedule;
     }
 
+    public String getScheduleFile() {
+        return scheduleFile;
+    }
+
+    public void setScheduleFile(String scheduleFile) {
+        this.scheduleFile = scheduleFile;
+    }
 
     public LatLng getPosition() {
         return position;
@@ -38,11 +51,11 @@ public class BusStop {
         this.name = name;
     }
 
-    public ArrayList<Schedule> getSchedule() {
-        return schedule;
+    public ArrayList<Schedule> getScheduleList() {
+        return scheduleList;
     }
 
-    public void setSchedule(ArrayList<Schedule> schedule) {
-        this.schedule = schedule;
+    public void setScheduleList(ArrayList<Schedule> schedule) {
+        this.scheduleList = scheduleList;
     }
 }

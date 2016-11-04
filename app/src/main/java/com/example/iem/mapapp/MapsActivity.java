@@ -3,46 +3,66 @@ package com.example.iem.mapapp;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.widget.ListView;
 
+import com.example.iem.mapapp.Model.BusLign;
+import com.example.iem.mapapp.Model.BusStop;
+import com.example.iem.mapapp.Model.Schedule;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.kml.KmlContainer;
 import com.google.maps.android.kml.KmlLayer;
 import com.google.maps.android.kml.KmlLineString;
 import com.google.maps.android.kml.KmlPlacemark;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends AbstractMapActivity   implements
+        OnMapReadyCallback, OnInfoWindowClickListener {
 
     private GoogleMap mMap;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
+    private Boolean needsInit=false;
+    private ArrayList<BusLign> lines = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        if (readyToGo()) {
+            setContentView(R.layout.activity_maps);
 
+            MapFragment mapFrag=
+                    (MapFragment)getFragmentManager().findFragmentById(R.id.map);
 
+            if (savedInstanceState == null) {
+                needsInit=true;
+            }
+
+            mapFrag.getMapAsync(this);
+        }
     }
+
+
 
 
 
@@ -76,6 +96,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
+
         mMap = googleMap;
 
 
@@ -85,6 +107,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(bourgEnBresse).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(bourgEnBresse));
         checkPermission();
+
+        InputStream ins = getResources().openRawResource(
+                getResources().getIdentifier("data",
+                        "raw", getPackageName()));
+
+        StringBuilder builder =new StringBuilder();
+        BufferedReader bReader = new BufferedReader(new InputStreamReader(ins));
+        String line="";
+        try {
+            while ((line = bReader.readLine()) != null) {
+                builder.append(line);
+            }
+       System.out.println("----------------------");
+        System.out.println(line);
+            System.out.println(builder.toString());
+        //create ObjectMapper instance
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        //convert json string to object
+
+           // BusLign emp = objectMapper.readValue(builder.toString(), BusLign.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         ArrayList<String> linesName= new ArrayList<>();
         //dev
@@ -99,12 +146,38 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         ArrayList<ArrayList<LatLng>> markersList = new ArrayList<>();
 
-        for(int i=0;i<linesName.size();i++)
+        displayMarkers(linesName);
+
+        //Adding markers to eachline
+
+        for(int i=0; i < lines.size(); i++){
+
+            BusLign.putStopsOnMap(lines.get(i).getstops(),mMap);
+
+
+
+
+        }
+
+
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+
+
+    }
+
+    private void displayMarkers(ArrayList<String> linesToDisplay)
+    {
+        for(int i=0;i<linesToDisplay.size();i++)
         {
             try {
+
                 InputStream ins = getResources().openRawResource(
-                        getResources().getIdentifier(linesName.get(i),
+                        getResources().getIdentifier(linesToDisplay.get(i),
                                 "raw", getPackageName()));
+
                 KmlLayer layer = new KmlLayer(mMap, ins, getApplicationContext());
                 System.out.println("ITEMS:"+ layer.getContainers().iterator().next().getProperties().iterator().next());
 
@@ -117,15 +190,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //  KmlLineString geo2 = (KmlLineString) layer.getContainers().iterator().next().getPlacemarks().iterator().next().getGeometry();
 
 
-                ArrayList<LatLng> stopList = geo.getGeometryObject();
+                ArrayList<LatLng> pointsList = geo.getGeometryObject();
 
-            mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
-            float zoomLevel = 12.0f;
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(stopList.get(0),zoomLevel));
+                // mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
+                float zoomLevel = 12.0f;
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pointsList.get(0),zoomLevel));
 
 
-                mMap.addMarker(new MarkerOptions().position(stopList.get(0)).title("test").snippet("coucou"));
 
+
+                ArrayList<BusStop> firstDirectionStops =  new ArrayList<>();
+                ArrayList<BusStop> secondDirectionStops =  new ArrayList<>();
+
+
+                //Construction données test
+
+
+                String dateExemple ="09:15";
+                String dateExemple2 ="17:45";
+
+                DateTimeFormatter format = DateTimeFormat.forPattern("HH:mm");
+                DateTime extractedTime = format.parseDateTime(dateExemple);
+                DateTime extractedTime2 = format.parseDateTime(dateExemple2);
+                //System.out.println(extractedTime.getHourOfDay()+" : "+ extractedTime.getMinuteOfHour());
+
+                ArrayList<Schedule> scheduleList = new ArrayList<>();
+                scheduleList.add(new Schedule(extractedTime,false));
+                scheduleList.add(new Schedule(extractedTime2,false));
+
+                firstDirectionStops.add(new BusStop(new LatLng(46.2073652781729,5.227577090263367),"gare",scheduleList));
+                secondDirectionStops.add(new BusStop(new LatLng(46.20518602822019,5.227196216583252),"gare2",scheduleList));
+
+                //Fin construction
+
+
+
+
+
+
+                BusLign line = new BusLign(linesToDisplay.get(i),firstDirectionStops,secondDirectionStops);
+
+                lines.add(line);
 
 
 
@@ -136,19 +241,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 e.printStackTrace();
             }
         }
-
-
-
-
-
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-
-
-
     }
-
-
 
     private void checkPermission(){
 
@@ -187,7 +280,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // Show rationale and request permission.
             Log.d("Erreur Permission","Permission de localisation");
         }
+        mMap.setInfoWindowAdapter(new PopupAdapter(getLayoutInflater()));
+        mMap.setOnInfoWindowClickListener(this);
+    }
+    private void addMarker(GoogleMap map, double lat, double lon,
+                           int title, int snippet) {
+        map.addMarker(new MarkerOptions().position(new LatLng(lat, lon))
+                .title(getString(title))
+                .snippet(getString(snippet)));
     }
 
 
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+
+    }
 }
