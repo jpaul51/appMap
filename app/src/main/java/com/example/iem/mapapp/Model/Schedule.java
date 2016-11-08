@@ -17,6 +17,7 @@ public class Schedule {
     public Schedule(DateTime schedule, boolean isVacation) {
         this.schedule = schedule;
         this.isVacation = isVacation;
+
     }
 
 

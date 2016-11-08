@@ -1,5 +1,6 @@
 package com.example.iem.mapapp.Model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -14,21 +15,36 @@ import java.util.ArrayList;
 
 public class BusLign   {
 
+    @JsonProperty("id")
+    int id;
+    @JsonProperty("label")
     String label;
+    @JsonProperty("number")
     int number;
+    @JsonProperty("color")
     String color;
+    @JsonProperty("order")
     int order;
+    @JsonProperty("traceFile")
     String traceFile;
+    @JsonProperty("stops")
     ArrayList<BusStop> stops;
-   
 
 
 
-    public BusLign(String label,ArrayList<BusStop> stops, ArrayList<BusStop> secondDirectionStops) {
-        this.label=label;
-        this.stops = stops;
-       
+    public BusLign(){
+
     }
+
+    public BusLign(int id, String label, int number, String color, int order, String traceFile) {
+        this.id = id;
+        this.label = label;
+        this.number = number;
+        this.color = color;
+        this.order = order;
+        this.traceFile = traceFile;
+    }
+
 
     public BusLign(String label, int number, String color, int order, String traceFile, ArrayList<BusStop> stops) {
         this.label = label;

@@ -44,6 +44,8 @@ dependencies {
     compile 'com.google.android.gms:play-services:9.8.0'
     compile 'com.google.maps.android:android-maps-utils:0.4.+'
     compile 'com.android.support:design:24.2.1'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-csv
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version: '2.8.4'
 
     testCompile 'junit:junit:4.12'
 }

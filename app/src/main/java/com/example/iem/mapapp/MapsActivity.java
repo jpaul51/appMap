@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -192,9 +193,7 @@ public class MapsActivity extends AbstractMapActivity
         mMap.moveCamera(CameraUpdateFactory.newLatLng(bourgEnBresse));
         checkPermission();
 
-        InputStream ins = getResources().openRawResource(
-                getResources().getIdentifier("data",
-                        "raw", getPackageName()));
+        InputStream ins = openRawFileByName("data");
 
         StringBuilder builder =new StringBuilder();
         BufferedReader bReader = new BufferedReader(new InputStreamReader(ins));
@@ -203,46 +202,66 @@ public class MapsActivity extends AbstractMapActivity
             while ((line = bReader.readLine()) != null) {
                 builder.append(line);
             }
-       System.out.println("----------------------");
-        System.out.println(line);
-            System.out.println(builder.toString());
-        //create ObjectMapper instance
-        ObjectMapper objectMapper = new ObjectMapper();
+            System.out.println("----------------------");
 
-        //convert json string to object
+            //System.out.println(builder.toString());
+            //create ObjectMapper instance
+            ObjectMapper objectMapper = new ObjectMapper();
 
-           // BusLign emp = objectMapper.readValue(builder.toString(), BusLign.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            //convert json string to object
+
+            List<BusLign> emp = Arrays.asList(objectMapper.readValue(builder.toString(), BusLign[].class));
 
 
-        ArrayList<String> linesName= new ArrayList<>();
-        //dev
-        linesName.add("ligne1");
-        //  linesName.add("ligne21");
-        linesName.add("ligne2ainterexpo");
-        linesName.add("ligne2norelan");
-        linesName.add("ligne3");
-        linesName.add("ligne4");
-
-        //endDev
-
-        ArrayList<ArrayList<LatLng>> markersList = new ArrayList<>();
-
-        displayMarkers(linesName);
-
-        //Adding markers to eachline
-
-        for(int i=0; i < lines.size(); i++){
-
-            BusLign.putStopsOnMap(lines.get(i).getstops(),mMap);
+            //System.out.println("LABEL: " + emp.get(0).getLabel() + " :::::: " + emp.get(0).getstops().get(0).getName());
 
 
+            InputStream horaire = null;
+            //System.out.println("FILENAME: " + emp.get(0).getstops().get(0).getScheduleFile());
+
+            horaire = openRawFileByName(getFileName(emp.get(0).getstops().get(0).getScheduleFile()));
 
 
-        }
+            builder = new StringBuilder();
+            bReader = new BufferedReader(new InputStreamReader(horaire));
+            line = "";
+            try {
+                while ((line = bReader.readLine()) != null) {
+                    builder.append(line);
+                }
+                String csv = builder.toString();
+                System.out.println(csv);
 
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            ArrayList<String> linesName = new ArrayList<>();
+            //dev
+            linesName.add("ligne1");
+            //  linesName.add("ligne21");
+            linesName.add("ligne2ainterexpo");
+            linesName.add("ligne2norelan");
+            linesName.add("ligne3");
+            linesName.add("ligne4");
+
+            //endDev
+
+            ArrayList<ArrayList<LatLng>> markersList = new ArrayList<>();
+
+            displayMarkers(linesName);
+
+            //Adding markers to eachline
+
+            for (int i = 0; i < lines.size(); i++) {
+
+                BusLign.putStopsOnMap(lines.get(i).getstops(), mMap);
+
+
+            }
+        }catch(Exception e){}
 
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -250,6 +269,36 @@ public class MapsActivity extends AbstractMapActivity
 
 
 
+    }
+
+
+
+
+
+    private String getFileName(String file){
+
+
+            String fileName = "";
+
+            int i = file.lastIndexOf('.');
+            if (i > 0) {
+                fileName = file.substring(0, i );
+            }
+            return fileName;
+
+
+    }
+
+
+    private InputStream openRawFileByName(String inputname)
+    {
+        InputStream ins =null;
+
+             ins = getResources().openRawResource(
+                    getResources().getIdentifier(inputname,
+                            "raw", getPackageName()));
+
+        return ins;
     }
 
     private void displayMarkers(ArrayList<String> linesToDisplay)
@@ -305,8 +354,8 @@ public class MapsActivity extends AbstractMapActivity
                 scheduleList.add(new Schedule(extractedTime,false));
                 scheduleList.add(new Schedule(extractedTime2,false));
 
-                firstDirectionStops.add(new BusStop(new LatLng(46.2073652781729,5.227577090263367),"gare",scheduleList));
-                secondDirectionStops.add(new BusStop(new LatLng(46.20518602822019,5.227196216583252),"gare2",scheduleList));
+                //firstDirectionStops.add("Ligne1",1,"red",1,"ligne1.kml",new BusStop(new LatLng(46.2073652781729,5.227577090263367),"gare",scheduleList));
+               // secondDirectionStops.add(new BusStop(new LatLng(46.20518602822019,5.227196216583252),"gare2",scheduleList));
 
                 //Fin construction
 
@@ -315,9 +364,9 @@ public class MapsActivity extends AbstractMapActivity
 
 
 
-                BusLign line = new BusLign(linesToDisplay.get(i),firstDirectionStops,secondDirectionStops);
+                //BusLign line = new BusLign(linesToDisplay.get(i),firstDirectionStops);
 
-                lines.add(line);
+               // lines.add(line);
 
 
 

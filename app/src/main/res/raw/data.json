@@ -1,58 +1,56 @@
-{
-	"lines": [{
+[{
+	"id": 1,
+	"label": "Ligne 1 : Norelan <> Velaine",
+	"number": 1,
+	"color": "#124b9a",
+	"order": 1,
+	"traceFile": "ligne1.kml",
+	"stops": [{
 		"id": 1,
-		"label": "Ligne 1 : Norelan <> Velaine",
-		"number": 1,
-		"color": "#124b9a",
-		"order": 1,
-		"traceFile":"ligne1.kml",
-		"stops": [{
-			"id": 1,
-			"name": "Baudin",
-			"latitude": 46.200648,
-			"longitude": 5.218698,
-			"scheduleFile": "horaire_1_norelan_moliere.csv"
-		}, {
-			"id": 2,
-			"name": "Abb\u00e9 Gringoz",
-			"latitude": 46.20223054919,
-			"longitude": 5.2469158172607
-		}, {
-			"id": 3,
-			"name": "A\u00e9roplanes",
-			"latitude": 46.190734534652,
-			"longitude": 5.2357578277588
-		}, {
-			"id": 4,
-			"name": "Alagnier",
-			"latitude": 46.194180620868,
-			"longitude": 5.2728796005249
-		}, {
-			"id": 5,
-			"name": "Alimentec",
-			"latitude": 46.215387117537,
-			"longitude": 5.2439975738525
-		}, {
-			"id": 7,
-			"name": "Mas",
-			"latitude": 46.204458180779,
-			"longitude": 5.2140855789185
-		}, {
-			"id": 8,
-			"name": "Arbelles",
-			"latitude": 46.194951,
-			"longitude": 5.234349
-		}, {
-			"id": 9,
-			"name": "Avant RP Fleyriat",
-			"latitude": 46.228017,
-			"longitude": 5.203613
-		}, {
-			"id": 10,
-			"name": "M\u00e2con",
-			"latitude": 46.2102792982,
-			"longitude": 5.2192354202271
-		}]
-
+		"name": "Baudin",
+		"latitude": 46.200648,
+		"longitude": 5.218698,
+		"scheduleFile": "horaire_1_norelan_moliere.csv"
+	}, {
+		"id": 2,
+		"name": "Abb\u00e9 Gringoz",
+		"latitude": 46.20223054919,
+		"longitude": 5.2469158172607
+	}, {
+		"id": 3,
+		"name": "A\u00e9roplanes",
+		"latitude": 46.190734534652,
+		"longitude": 5.2357578277588
+	}, {
+		"id": 4,
+		"name": "Alagnier",
+		"latitude": 46.194180620868,
+		"longitude": 5.2728796005249
+	}, {
+		"id": 5,
+		"name": "Alimentec",
+		"latitude": 46.215387117537,
+		"longitude": 5.2439975738525
+	}, {
+		"id": 7,
+		"name": "Mas",
+		"latitude": 46.204458180779,
+		"longitude": 5.2140855789185
+	}, {
+		"id": 8,
+		"name": "Arbelles",
+		"latitude": 46.194951,
+		"longitude": 5.234349
+	}, {
+		"id": 9,
+		"name": "Avant RP Fleyriat",
+		"latitude": 46.228017,
+		"longitude": 5.203613
+	}, {
+		"id": 10,
+		"name": "M\u00e2con",
+		"latitude": 46.2102792982,
+		"longitude": 5.2192354202271
 	}]
-}
+
+}]

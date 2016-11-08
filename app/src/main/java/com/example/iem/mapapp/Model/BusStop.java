@@ -1,5 +1,7 @@
 package com.example.iem.mapapp.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -10,15 +12,47 @@ import java.util.ArrayList;
 
 public class BusStop {
 
-    LatLng position;
+
+    @JsonIgnore LatLng position;
+    @JsonProperty("id")
+    int id;
+    @JsonProperty("latitude")
+    double latitude;
+    @JsonProperty("longitude")
+    double longitude;
+    @JsonProperty("name")
     String name;
+    @JsonProperty("scheduleFile")
     String scheduleFile;
-    ArrayList<Schedule> scheduleList;
+
+    @JsonIgnore
+     ArrayList<Schedule> scheduleList;
+
+
+    public BusStop(int id, String name, double latitude, double longitude, String scheduleFile) {
+        this.id = id;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.name = name;
+        this.scheduleFile = scheduleFile;
+
+    }
+
+    public BusStop(){}
+
+    public BusStop(double latitude, double longitude, String name, String scheduleFile) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.position = new LatLng(latitude,longitude);
+        this.name = name;
+        this.scheduleFile = scheduleFile;
+    }
 
     public BusStop(LatLng position, String name, String scheduleFile) {
         this.position = position;
         this.name = name;
         this.scheduleFile = scheduleFile;
+
     }
 
     public BusStop(LatLng position, String name, ArrayList<Schedule> schedule) {
