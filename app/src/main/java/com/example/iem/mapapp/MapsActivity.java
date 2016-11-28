@@ -1,6 +1,7 @@
 package com.example.iem.mapapp;
 
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -11,13 +12,15 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ListView;
+import android.widget.Toast;
 
-import com.example.iem.mapapp.Model.BusLign;
-import com.example.iem.mapapp.Model.BusStop;
-import com.example.iem.mapapp.Model.Schedule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -27,12 +30,15 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.maps.android.kml.KmlContainer;
 import com.google.maps.android.kml.KmlLayer;
 import com.google.maps.android.kml.KmlLineString;
 import com.google.maps.android.kml.KmlPlacemark;
+import com.vividsolutions.jts.geom.LineString;
 
 import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.xmlpull.v1.XmlPullParserException;
@@ -44,6 +50,14 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import app.model.Line;
+import app.model.LinesAndStops;
+import app.model.Schedule;
+import app.model.Stop;
+
+import static com.example.iem.mapapp.R.id.map;
 
 
 public class MapsActivity extends AbstractMapActivity
@@ -54,8 +68,8 @@ public class MapsActivity extends AbstractMapActivity
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
 
-    private Boolean needsInit=false;
-    private ArrayList<BusLign> lines = new ArrayList<>();
+    private Boolean needsInit = false;
+    // private ArrayList<BusLign> lines = new ArrayList<>();
 
     private Toolbar toolbar;
 
@@ -69,38 +83,151 @@ public class MapsActivity extends AbstractMapActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-            if (readyToGo()) {
-                setContentView(R.layout.activity_main);
-                toolbar = (Toolbar) findViewById(R.id.toolbar);
-                toolbar.setTitle("All");
-                setSupportActionBar(toolbar);
+        if (readyToGo()) {
+            setContentView(R.layout.activity_main);
+            toolbar = (Toolbar) findViewById(R.id.toolbar);
+            toolbar.setTitle("All");
+            setSupportActionBar(toolbar);
 
 
-                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-                ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                        this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-                drawer.setDrawerListener(toggle);
-                toggle.syncState();
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                    this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+            drawer.setDrawerListener(toggle);
+            toggle.syncState();
 
-                NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-                navigationView.setNavigationItemSelectedListener(this);
+            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+            navigationView.setNavigationItemSelectedListener(this);
 
-                menuListInit();
-                expListView = (ExpandableListView) findViewById(R.id.ExpandableList);
+            menuListInit();
+            expListView = (ExpandableListView) findViewById(R.id.ExpandableList);
 
-                listAdapter = new ExpandableListAdapterPerso(this, listDataHeader, listDataChild);
-                expListView.setAdapter(listAdapter);
+            listAdapter = new ExpandableListAdapterPerso(this, listDataHeader, listDataChild);
+            expListView.setAdapter(listAdapter);
 
-
-                // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-                SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                        .findFragmentById(R.id.map);
-
-                if (savedInstanceState == null) {
-                    needsInit=true;
+            expListView.setOnChildClickListener(new OnChildClickListener() {
+                @Override
+                public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                    String header = listDataHeader.get(groupPosition);
+                    String child = listDataChild.get(header).get(childPosition);
+                    String message = "Clicked on "+child;
+                    Toast.makeText(getBaseContext(), message
+                            , Toast.LENGTH_LONG).show();
+                    return false;
                 }
-                mapFragment.getMapAsync(this);
+            });
+
+            Button displayNetworkButton = (Button)findViewById(R.id.btnDisplayNetwork);
+            displayNetworkButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(getBaseContext(), "LOAD NETWORK"
+                            , Toast.LENGTH_LONG).show();
+                    loadNetwork();
+                }
+            });
+
+
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(map);
+
+            if (savedInstanceState == null) {
+                needsInit = true;
             }
+            mapFragment.getMapAsync(this);
+        }
+    }
+
+
+
+    private void loadNetwork(){
+        String lines=null;
+
+        LinesAndStops linesAndStops=null;
+        // Instantiate the RequestQueue.
+        try {
+             lines = (String) new MyAsyncTask().execute().get();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
+        try {
+             linesAndStops  = mapper.readValue(lines,LinesAndStops.class);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ArrayList<LatLng> linesPoints = new ArrayList<>();
+        LineString aLine=null;
+        for(Line aMultiLine : linesAndStops.getLines()) {
+            for (int i=0; i < aMultiLine.getLines().getNumGeometries();i++ ) {
+                aLine = (LineString) aMultiLine.getLines().getGeometryN(i);
+                PolygonOptions polyOptions = new PolygonOptions().strokeColor(Color.parseColor(aMultiLine.getColor()))
+                       ;
+                for (int coordinatesIndex = 0; coordinatesIndex < aLine.getCoordinates().length; coordinatesIndex++) {
+                   // linesPoints.add();
+                    polyOptions.add(new LatLng(aLine.getCoordinates()[coordinatesIndex].y,aLine.getCoordinates()[coordinatesIndex].x));
+                }
+
+
+                mMap.addPolygon(polyOptions);
+            }
+        }
+
+        LocalDateTime localDateTime = new LocalDateTime();
+
+        for (Stop aStop: linesAndStops.getStops())
+        {
+            /* building test data to remove */
+            ArrayList<Schedule> testSchedules= new ArrayList<>();
+            Schedule s1 = new Schedule();
+            String dateExemple ="09:15";
+            String dateExemple2 ="17:45";
+
+            DateTimeFormatter format = DateTimeFormat.forPattern("HH:mm");
+            DateTime extractedTime = format.parseDateTime(dateExemple);
+            DateTime extractedTime2 = format.parseDateTime(dateExemple2);
+
+            ArrayList<DateTime> dates = new ArrayList<>();
+            dates.add(extractedTime);
+            dates.add(extractedTime2);
+
+            s1.setSchedules(dates);
+            ArrayList<Schedule> stopSchedules = new ArrayList<>();
+            stopSchedules.add(s1);
+            aStop.setSchedules(stopSchedules);
+
+            /* End building */
+            MarkerOptions opt = new MarkerOptions()
+                    .position(new LatLng(aStop.getPoint().getX(), aStop.getPoint().getY()))
+                    .title(aStop.getLabel());
+
+            String oldSnippet="";
+            for(DateTime time : aStop.getSchedules().get(0).getSchedules()) {
+                if (opt.getSnippet()!=null)
+                    oldSnippet= opt.getSnippet();
+                if(time.getHourOfDay() == localDateTime.getHourOfDay()  ) {
+                    if (time.getMinuteOfHour() > localDateTime.getMinuteOfHour()) {
+                        opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
+                    }
+                } else if(time.getHourOfDay() > localDateTime.getHourOfDay()  ) {
+                    opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
+                }
+            }
+           mMap.addMarker(opt);
+
+
+
+        }
+
+
+
+
     }
 
     @Override
@@ -192,9 +319,7 @@ public class MapsActivity extends AbstractMapActivity
         mMap.moveCamera(CameraUpdateFactory.newLatLng(bourgEnBresse));
         checkPermission();
 
-        InputStream ins = getResources().openRawResource(
-                getResources().getIdentifier("data",
-                        "raw", getPackageName()));
+        InputStream ins = openRawFileByName("data");
 
         StringBuilder builder =new StringBuilder();
         BufferedReader bReader = new BufferedReader(new InputStreamReader(ins));
@@ -203,46 +328,66 @@ public class MapsActivity extends AbstractMapActivity
             while ((line = bReader.readLine()) != null) {
                 builder.append(line);
             }
-       System.out.println("----------------------");
-        System.out.println(line);
-            System.out.println(builder.toString());
-        //create ObjectMapper instance
-        ObjectMapper objectMapper = new ObjectMapper();
+            System.out.println("----------------------");
 
-        //convert json string to object
+            //System.out.println(builder.toString());
+            //create ObjectMapper instance
+            ObjectMapper objectMapper = new ObjectMapper();
 
-           // BusLign emp = objectMapper.readValue(builder.toString(), BusLign.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            //convert json string to object
+
+          //  List<BusLign> emp = Arrays.asList(objectMapper.readValue(builder.toString(), BusLign[].class));
 
 
-        ArrayList<String> linesName= new ArrayList<>();
-        //dev
-        linesName.add("ligne1");
-        //  linesName.add("ligne21");
-        linesName.add("ligne2ainterexpo");
-        linesName.add("ligne2norelan");
-        linesName.add("ligne3");
-        linesName.add("ligne4");
-
-        //endDev
-
-        ArrayList<ArrayList<LatLng>> markersList = new ArrayList<>();
-
-        displayMarkers(linesName);
-
-        //Adding markers to eachline
-
-        for(int i=0; i < lines.size(); i++){
-
-            BusLign.putStopsOnMap(lines.get(i).getstops(),mMap);
+            //System.out.println("LABEL: " + emp.get(0).getLabel() + " :::::: " + emp.get(0).getstops().get(0).getName());
 
 
+            InputStream horaire = null;
+            //System.out.println("FILENAME: " + emp.get(0).getstops().get(0).getScheduleFile());
+
+           // horaire = openRawFileByName(getFileName(emp.get(0).getstops().get(0).getScheduleFile()));
 
 
-        }
+            builder = new StringBuilder();
+            bReader = new BufferedReader(new InputStreamReader(horaire));
+            line = "";
+            try {
+                while ((line = bReader.readLine()) != null) {
+                    builder.append(line);
+                }
+                String csv = builder.toString();
+                System.out.println(csv);
 
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            ArrayList<String> linesName = new ArrayList<>();
+            //dev
+            linesName.add("ligne1");
+            //  linesName.add("ligne21");
+            linesName.add("ligne2ainterexpo");
+            linesName.add("ligne2norelan");
+            linesName.add("ligne3");
+            linesName.add("ligne4");
+
+            //endDev
+
+            ArrayList<ArrayList<LatLng>> markersList = new ArrayList<>();
+
+            displayMarkers(linesName);
+
+            //Adding markers to eachline
+/*
+            for (int i = 0; i < lines.size(); i++) {
+
+                BusLign.putStopsOnMap(lines.get(i).getstops(), mMap);
+
+
+            }*/
+        }catch(Exception e){}
 
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -250,6 +395,36 @@ public class MapsActivity extends AbstractMapActivity
 
 
 
+    }
+
+
+
+
+
+    private String getFileName(String file){
+
+
+            String fileName = "";
+
+            int i = file.lastIndexOf('.');
+            if (i > 0) {
+                fileName = file.substring(0, i );
+            }
+            return fileName;
+
+
+    }
+
+
+    private InputStream openRawFileByName(String inputname)
+    {
+        InputStream ins =null;
+
+             ins = getResources().openRawResource(
+                    getResources().getIdentifier(inputname,
+                            "raw", getPackageName()));
+
+        return ins;
     }
 
     private void displayMarkers(ArrayList<String> linesToDisplay)
@@ -279,12 +454,11 @@ public class MapsActivity extends AbstractMapActivity
 
 
 
-
                 float zoomLevel = 12.25f;
                 LatLng centerOfBourg = new LatLng(46.202181, 5.237056);
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerOfBourg,zoomLevel));
 
-
+/*
 
                 ArrayList<BusStop> firstDirectionStops =  new ArrayList<>();
                 ArrayList<BusStop> secondDirectionStops =  new ArrayList<>();
@@ -305,19 +479,19 @@ public class MapsActivity extends AbstractMapActivity
                 scheduleList.add(new Schedule(extractedTime,false));
                 scheduleList.add(new Schedule(extractedTime2,false));
 
-                firstDirectionStops.add(new BusStop(new LatLng(46.2073652781729,5.227577090263367),"gare",scheduleList));
-                secondDirectionStops.add(new BusStop(new LatLng(46.20518602822019,5.227196216583252),"gare2",scheduleList));
+                //firstDirectionStops.add("Ligne1",1,"red",1,"ligne1.kml",new BusStop(new LatLng(46.2073652781729,5.227577090263367),"gare",scheduleList));
+               // secondDirectionStops.add(new BusStop(new LatLng(46.20518602822019,5.227196216583252),"gare2",scheduleList));
 
                 //Fin construction
 
+*/
 
 
 
 
+                //BusLign line = new BusLign(linesToDisplay.get(i),firstDirectionStops);
 
-                BusLign line = new BusLign(linesToDisplay.get(i),firstDirectionStops,secondDirectionStops);
-
-                lines.add(line);
+               // lines.add(line);
 
 
 

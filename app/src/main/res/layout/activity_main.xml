@@ -19,10 +19,14 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true" >
-
+<Button
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/btnDisplayNetwork"
+    android:text="Load network"/>
         <ExpandableListView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:id="@+id/ExpandableList"/>
     </android.support.design.widget.NavigationView>

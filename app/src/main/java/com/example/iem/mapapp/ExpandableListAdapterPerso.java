@@ -11,6 +11,9 @@ import android.widget.TextView;
 import java.util.HashMap;
 import java.util.List;
 
+import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.ExpandableListView.OnGroupClickListener;
+
 /**
  * Created by Maxime on 04/11/2016.
  */
