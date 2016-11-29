@@ -32,7 +32,7 @@ public class MyAsyncTask extends AsyncTask {
     }
 
     private  void request(){
-        String url ="myIP/getlinesandstops";
+        String url ="http://178.62.77.239:8080/getlinesandstops";
         BufferedReader in;
         try {
             URL urlGetNetwork = new URL(url);
