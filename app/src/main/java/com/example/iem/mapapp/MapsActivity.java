@@ -62,7 +62,6 @@ public class MapsActivity extends AbstractMapActivity
     private ListView mDrawerList;
 
     private Boolean needsInit = false;
-    // private ArrayList<BusLign> lines = new ArrayList<>();
 
     private Toolbar toolbar;
     private LinesAndStops linesAndStops;
