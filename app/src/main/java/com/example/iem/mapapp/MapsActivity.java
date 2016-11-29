@@ -65,6 +65,8 @@ public class MapsActivity extends AbstractMapActivity
     // private ArrayList<BusLign> lines = new ArrayList<>();
 
     private Toolbar toolbar;
+    private LinesAndStops linesAndStops;
+
 
     ExpandableListAdapter listAdapter;
     ExpandableListView expListView;
@@ -137,7 +139,7 @@ public class MapsActivity extends AbstractMapActivity
     private void loadNetwork(){
         String lines=null;
 
-        LinesAndStops linesAndStops=null;
+         linesAndStops=null;
         // Instantiate the RequestQueue.
         try {
             lines = (String) new MyAsyncTask().execute().get();
@@ -247,6 +249,7 @@ public class MapsActivity extends AbstractMapActivity
         listLine.add("Ligne 6");
         listLine.add("Ligne 7");
         listLine.add("Ligne 8");
+        listLine.add(linesAndStops.getLines().get(0).getName());
 
         listDataChild.put(listDataHeader.get(0),listLine);
 
