@@ -27,7 +27,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/btnDisplayNetwork"
-                android:text="Load network"/>
+                android:text="Load network"
+                android:layout_marginTop="20dp"/>
 
             <ExpandableListView
                 android:layout_width="match_parent"

@@ -30,23 +30,16 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.maps.android.kml.KmlContainer;
-import com.google.maps.android.kml.KmlLayer;
-import com.google.maps.android.kml.KmlLineString;
-import com.google.maps.android.kml.KmlPlacemark;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.vividsolutions.jts.geom.LineString;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -147,7 +140,7 @@ public class MapsActivity extends AbstractMapActivity
         LinesAndStops linesAndStops=null;
         // Instantiate the RequestQueue.
         try {
-             lines = (String) new MyAsyncTask().execute().get();
+            lines = (String) new MyAsyncTask().execute().get();
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -156,7 +149,7 @@ public class MapsActivity extends AbstractMapActivity
         }
         ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
         try {
-             linesAndStops  = mapper.readValue(lines,LinesAndStops.class);
+            linesAndStops  = mapper.readValue(lines,LinesAndStops.class);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -167,15 +160,15 @@ public class MapsActivity extends AbstractMapActivity
         for(Line aMultiLine : linesAndStops.getLines()) {
             for (int i=0; i < aMultiLine.getLines().getNumGeometries();i++ ) {
                 aLine = (LineString) aMultiLine.getLines().getGeometryN(i);
-                PolygonOptions polyOptions = new PolygonOptions().strokeColor(Color.parseColor(aMultiLine.getColor()))
-                       ;
+                PolylineOptions polyOptions = new PolylineOptions().color(Color.parseColor(aMultiLine.getColor()))
+                        ;
                 for (int coordinatesIndex = 0; coordinatesIndex < aLine.getCoordinates().length; coordinatesIndex++) {
-                   // linesPoints.add();
+                    // linesPoints.add();
                     polyOptions.add(new LatLng(aLine.getCoordinates()[coordinatesIndex].y,aLine.getCoordinates()[coordinatesIndex].x));
                 }
 
 
-                mMap.addPolygon(polyOptions);
+                mMap.addPolyline(polyOptions);
             }
         }
 
@@ -219,7 +212,7 @@ public class MapsActivity extends AbstractMapActivity
                     opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
                 }
             }
-           mMap.addMarker(opt);
+            mMap.addMarker(opt);
 
 
 
@@ -275,23 +268,7 @@ public class MapsActivity extends AbstractMapActivity
 
 
 
-    private KmlLineString getMarkers(KmlContainer layer){
-        KmlLineString retour=null;
-        if(layer.getPlacemarks().iterator().hasNext()) {
-            retour = (KmlLineString) layer.getPlacemarks().iterator().next().getGeometry();
-            // System.out.println("INFO:"+layer.getPlacemarks().iterator().next().getGeometry().toString());
-        }
-        else {
-            if (layer.getContainers().iterator().hasNext()) {
-                getMarkers(layer.getContainers().iterator().next());
-            }
-            else{
-                System.out.println("Il n'y a pas de markers !!");
-            }
-        }
 
-        return retour;
-    }
 
 
 
@@ -314,81 +291,7 @@ public class MapsActivity extends AbstractMapActivity
 
         // Add a marker in Sydney and move the camera
 
-        LatLng bourgEnBresse = new LatLng(46.2052, 5.2255);
-        mMap.addMarker(new MarkerOptions().position(bourgEnBresse).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(bourgEnBresse));
         checkPermission();
-
-        InputStream ins = openRawFileByName("data");
-
-        StringBuilder builder =new StringBuilder();
-        BufferedReader bReader = new BufferedReader(new InputStreamReader(ins));
-        String line="";
-        try {
-            while ((line = bReader.readLine()) != null) {
-                builder.append(line);
-            }
-            System.out.println("----------------------");
-
-            //System.out.println(builder.toString());
-            //create ObjectMapper instance
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            //convert json string to object
-
-          //  List<BusLign> emp = Arrays.asList(objectMapper.readValue(builder.toString(), BusLign[].class));
-
-
-            //System.out.println("LABEL: " + emp.get(0).getLabel() + " :::::: " + emp.get(0).getstops().get(0).getName());
-
-
-            InputStream horaire = null;
-            //System.out.println("FILENAME: " + emp.get(0).getstops().get(0).getScheduleFile());
-
-           // horaire = openRawFileByName(getFileName(emp.get(0).getstops().get(0).getScheduleFile()));
-
-
-            builder = new StringBuilder();
-            bReader = new BufferedReader(new InputStreamReader(horaire));
-            line = "";
-            try {
-                while ((line = bReader.readLine()) != null) {
-                    builder.append(line);
-                }
-                String csv = builder.toString();
-                System.out.println(csv);
-
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-            ArrayList<String> linesName = new ArrayList<>();
-            //dev
-            linesName.add("ligne1");
-            //  linesName.add("ligne21");
-            linesName.add("ligne2ainterexpo");
-            linesName.add("ligne2norelan");
-            linesName.add("ligne3");
-            linesName.add("ligne4");
-
-            //endDev
-
-            ArrayList<ArrayList<LatLng>> markersList = new ArrayList<>();
-
-            displayMarkers(linesName);
-
-            //Adding markers to eachline
-/*
-            for (int i = 0; i < lines.size(); i++) {
-
-                BusLign.putStopsOnMap(lines.get(i).getstops(), mMap);
-
-
-            }*/
-        }catch(Exception e){}
-
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
@@ -404,13 +307,13 @@ public class MapsActivity extends AbstractMapActivity
     private String getFileName(String file){
 
 
-            String fileName = "";
+        String fileName = "";
 
-            int i = file.lastIndexOf('.');
-            if (i > 0) {
-                fileName = file.substring(0, i );
-            }
-            return fileName;
+        int i = file.lastIndexOf('.');
+        if (i > 0) {
+            fileName = file.substring(0, i );
+        }
+        return fileName;
 
 
     }
@@ -420,89 +323,14 @@ public class MapsActivity extends AbstractMapActivity
     {
         InputStream ins =null;
 
-             ins = getResources().openRawResource(
-                    getResources().getIdentifier(inputname,
-                            "raw", getPackageName()));
+        ins = getResources().openRawResource(
+                getResources().getIdentifier(inputname,
+                        "raw", getPackageName()));
 
         return ins;
     }
 
-    private void displayMarkers(ArrayList<String> linesToDisplay)
-    {
-        for(int i=0;i<linesToDisplay.size();i++)
-        {
-            try {
 
-                InputStream ins = getResources().openRawResource(
-                        getResources().getIdentifier(linesToDisplay.get(i),
-                                "raw", getPackageName()));
-
-                KmlLayer layer = new KmlLayer(mMap, ins, getApplicationContext());
-                System.out.println("ITEMS:"+ layer.getContainers().iterator().next().getProperties().iterator().next());
-
-                layer.addLayerToMap();
-                KmlPlacemark k;
-                Iterable<KmlPlacemark> markers;
-                KmlLineString geo=getMarkers(layer.getContainers().iterator().next());
-                // System.out.println("INFO"+geo.getGeometryObject().size());
-
-                //  KmlLineString geo2 = (KmlLineString) layer.getContainers().iterator().next().getPlacemarks().iterator().next().getGeometry();
-
-
-                ArrayList<LatLng> pointsList = geo.getGeometryObject();
-
-
-
-
-                float zoomLevel = 12.25f;
-                LatLng centerOfBourg = new LatLng(46.202181, 5.237056);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerOfBourg,zoomLevel));
-
-/*
-
-                ArrayList<BusStop> firstDirectionStops =  new ArrayList<>();
-                ArrayList<BusStop> secondDirectionStops =  new ArrayList<>();
-
-
-                //Construction données test
-
-
-                String dateExemple ="09:15";
-                String dateExemple2 ="17:45";
-
-                DateTimeFormatter format = DateTimeFormat.forPattern("HH:mm");
-                DateTime extractedTime = format.parseDateTime(dateExemple);
-                DateTime extractedTime2 = format.parseDateTime(dateExemple2);
-                //System.out.println(extractedTime.getHourOfDay()+" : "+ extractedTime.getMinuteOfHour());
-
-                ArrayList<Schedule> scheduleList = new ArrayList<>();
-                scheduleList.add(new Schedule(extractedTime,false));
-                scheduleList.add(new Schedule(extractedTime2,false));
-
-                //firstDirectionStops.add("Ligne1",1,"red",1,"ligne1.kml",new BusStop(new LatLng(46.2073652781729,5.227577090263367),"gare",scheduleList));
-               // secondDirectionStops.add(new BusStop(new LatLng(46.20518602822019,5.227196216583252),"gare2",scheduleList));
-
-                //Fin construction
-
-*/
-
-
-
-
-                //BusLign line = new BusLign(linesToDisplay.get(i),firstDirectionStops);
-
-               // lines.add(line);
-
-
-
-
-            } catch (XmlPullParserException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     private void checkPermission(){
 
@@ -557,7 +385,7 @@ public class MapsActivity extends AbstractMapActivity
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-            int u =1;
+        int u =1;
         u++;
     }
 
