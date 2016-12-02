@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import java.util.HashMap;
@@ -98,6 +99,15 @@ public class ExpandableListAdapterPerso extends BaseExpandableListAdapter {
 
         TextView txtListChild = (TextView) convertView
                 .findViewById(R.id.lblListItem);
+
+        final CheckBox cbListChild = (CheckBox) convertView.findViewById(R.id.cb_item_line);
+
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                cbListChild.setChecked(!cbListChild.isChecked());
+            }
+        });
 
         txtListChild.setText(childText);
         return convertView;
