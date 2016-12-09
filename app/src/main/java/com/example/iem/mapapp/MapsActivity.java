@@ -21,6 +21,7 @@ import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.iem.mapapp.callApi.ApiRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -60,7 +61,7 @@ public class MapsActivity extends AbstractMapActivity
     private GoogleMap mMap;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
-
+    private ApiRequest apiRequest;
     private Boolean needsInit = false;
 
     private Toolbar toolbar;
@@ -76,12 +77,13 @@ public class MapsActivity extends AbstractMapActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (readyToGo()) {
             setContentView(R.layout.activity_main);
             toolbar = (Toolbar) findViewById(R.id.toolbar);
             toolbar.setTitle("All");
             setSupportActionBar(toolbar);
+
+            apiRequest = ApiRequest.getInstance();
 
 
             DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -98,18 +100,6 @@ public class MapsActivity extends AbstractMapActivity
 
             listAdapter = new ExpandableListAdapterPerso(this, listDataHeader, listDataChild);
             expListView.setAdapter(listAdapter);
-
-            expListView.setOnChildClickListener(new OnChildClickListener() {
-                @Override
-                public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                    String header = listDataHeader.get(groupPosition);
-                    String child = listDataChild.get(header).get(childPosition);
-                    String message = "Clicked on "+child;
-                    Toast.makeText(getBaseContext(), message
-                            , Toast.LENGTH_LONG).show();
-                    return false;
-                }
-            });
 
             Button displayNetworkButton = (Button)findViewById(R.id.btnDisplayNetwork);
             displayNetworkButton.setOnClickListener(new OnClickListener() {
@@ -138,16 +128,10 @@ public class MapsActivity extends AbstractMapActivity
     private void loadNetwork(){
         String lines=null;
 
-         linesAndStops=null;
-        // Instantiate the RequestQueue.
-        try {
-            lines = (String) new MyAsyncTask().execute().get();
+        linesAndStops=null;
 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        lines = apiRequest.getlinesAndStops();
+
         ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
         try {
             linesAndStops  = mapper.readValue(lines,LinesAndStops.class);
@@ -237,19 +221,8 @@ public class MapsActivity extends AbstractMapActivity
     private void menuListInit(){
         listDataHeader = new ArrayList<String>();
         listDataChild = new HashMap<String, List<String>>();
-
-        listDataHeader.add("Ligne");
-        List<String> listLine = new ArrayList<String>();
-        listLine.add("Ligne 1");
-        listLine.add("Ligne 2");
-        listLine.add("Ligne 3");
-        listLine.add("Ligne 4");
-        listLine.add("Ligne 5");
-        listLine.add("Ligne 6");
-        listLine.add("Ligne 7");
-        listLine.add("Ligne 8");
-
-        listDataChild.put(listDataHeader.get(0),listLine);
+        listDataHeader.add("Lignes");
+        listDataChild.put(listDataHeader.get(0),apiRequest.getLinesName());
 
     }
 
