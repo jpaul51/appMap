@@ -29,6 +29,24 @@ public class ApiRequest {
 
 
 
+    public String[] getLinesNames(){
+        String url = ip_url + "/getlinesname";
+        try {
+            String response = httpRequest(url);
+            ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
+            List<String> nameLines = mapper.readValue(response,List.class);
+            String retour[] = new String[nameLines.size()];
+            for(int i = 0 ; i < nameLines.size(); i++){
+                retour[i] = nameLines.get(i);
+            }
+            return retour;
+        }catch (Exception e){
+            System.out.println("ERROR: "+e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public List<String> getLinesName(){
         String url = ip_url + "/getlinesname";
         try {

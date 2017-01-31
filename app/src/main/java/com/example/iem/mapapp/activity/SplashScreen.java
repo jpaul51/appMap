@@ -10,6 +10,8 @@ import com.example.iem.mapapp.R;
 import com.example.iem.mapapp.callApi.ApiRequest;
 import com.example.iem.mapapp.utils.Constante;
 
+import java.util.List;
+
 public class SplashScreen extends AppCompatActivity {
 
     @Override
@@ -27,8 +29,8 @@ public class SplashScreen extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Object[] params) {
-            namesLines = apiRequest.getLinesName();
-            System.out.println("RETOUR: " + namesLines.toString());
+            namesLines = apiRequest.getLinesNames();
+            //System.out.println("RETOUR: " + namesLines.toString());
             return null;
         }
 
