@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+def dbflow_version = "4.0.0-beta5"
 
 android {
     compileSdkVersion 24
@@ -25,6 +26,8 @@ android {
     }
 }
 
+
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -50,6 +53,15 @@ dependencies {
     compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.8.4'
     testCompile 'junit:junit:4.12'
     compile files('libs/tubModel.jar')
+
+    //roughike bottom bar
+    compile 'com.roughike:bottom-bar:2.1.1'
+
+    /*DBFLow
+    annotationProcessor "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
+    compile "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
+    compile "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
+    // sql-cipher database encryption (optional)
+    compile "com.github.Raizlabs.DBFlow:dbflow-sqlcipher:${dbflow_version}"*/
+
 }
-
-

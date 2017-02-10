@@ -1,0 +1,10 @@
+<tabs>
+    <tab
+        id="@+id/tab_ligne"
+        icon="@drawable/ic_direction"
+        title="Lignes" />
+    <tab
+        id="@+id/tab_direction"
+        icon="@drawable/ic_direction"
+        title="itineraire" />
+</tabs>

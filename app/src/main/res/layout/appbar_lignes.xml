@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <Button
+            android:text="1"
+            android:layout_height="50dp"
+            android:id="@+id/bt_ligne1"
+            android:background="@drawable/roundedbutton"
+            android:layout_width="50dp"
+            android:textColor="@android:color/black"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp" />
+
+            <Button
+                android:text="2"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/bt_ligne2"
+                android:background="@drawable/roundedbutton"
+                android:textColor="@android:color/black"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"/>
+
+            <Button
+                android:text="3"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/bt_ligne3"
+                android:layout_weight="1"
+                android:background="@drawable/roundedbutton"
+                android:textColor="@android:color/black"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"/>
+
+            <Button
+                android:text="4"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/bt_ligne4"
+                android:layout_weight="1"
+                android:background="@drawable/roundedbutton"
+                android:textColor="@android:color/black"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"/>
+
+            <Button
+                android:text="5"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/bt_ligne5"
+                android:layout_weight="1"
+                android:background="@drawable/roundedbutton"
+                android:textColor="@android:color/black"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"/>
+
+            <Button
+                android:text="6"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/bt_ligne6"
+                android:layout_weight="1"
+                android:background="@drawable/roundedbutton"
+                android:textColor="@android:color/black"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"/>
+
+            <Button
+                android:text="7"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/bt_ligne7"
+                android:layout_weight="1"
+                tools:text="7"
+                android:background="@drawable/roundedbutton"
+                android:textColor="@android:color/black"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"/>
+
+            <Button
+                android:text="8"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/bt_ligne8"
+                android:layout_weight="1"
+                tools:text="8"
+                android:background="@drawable/roundedbutton"
+                android:textColor="@android:color/black"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"/>
+
+        </LinearLayout>
+    </HorizontalScrollView>
+</LinearLayout>

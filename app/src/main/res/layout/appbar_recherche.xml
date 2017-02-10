@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="45dp">
+
+        <TextView
+            android:layout_height="match_parent"
+            android:id="@+id/tv_ligneDepart"
+            android:layout_weight="1"
+            tools:text="@string/textAppbarLigneDepart"
+            android:text="@string/textAppbarLigneDepart"
+            android:layout_width="55dp"
+            android:textAlignment="center"
+            android:layout_centerVertical="false"
+            android:gravity="center" />
+
+        <AutoCompleteTextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/tv_entrerNomLigneDepart"
+            android:layout_weight="1"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/tv_ligneDepart"
+            android:layout_toEndOf="@+id/tv_ligneDepart" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="45dp">
+
+        <TextView
+            android:text="@string/textAppbarLigneArriver"
+            android:layout_height="match_parent"
+            android:id="@+id/tv_ligneArriver"
+            android:layout_weight="1"
+            tools:text="@string/textAppbarLigneArriver"
+            android:layout_width="55dp"
+            android:gravity="center" />
+
+        <AutoCompleteTextView
+            android:id="@+id/tv_entrerNomLigneArriver"
+            android:layout_weight="10"
+            android:layout_width="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/tv_ligneArriver"
+            android:layout_toEndOf="@+id/tv_ligneArriver"
+            android:layout_height="match_parent" />
+
+    </RelativeLayout>
+</LinearLayout>

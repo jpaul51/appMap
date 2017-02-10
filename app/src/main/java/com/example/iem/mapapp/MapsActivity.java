@@ -1,8 +1,12 @@
 package com.example.iem.mapapp;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -19,9 +23,12 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.iem.mapapp.callApi.ApiRequest;
+import com.example.iem.mapapp.interfaces.CallbackButtonClick;
+import com.example.iem.mapapp.listener.ButtonCliqueListener;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -32,6 +39,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.wallet.firstparty.GetBuyFlowInitializationTokenResponse;
+import com.roughike.bottombar.BottomBar;
+import com.roughike.bottombar.OnTabSelectListener;
 import com.vividsolutions.jts.geom.LineString;
 
 import org.joda.time.DateTime;
@@ -52,69 +62,95 @@ import app.model.Schedule;
 import app.model.Stop;
 
 import static com.example.iem.mapapp.R.id.map;
+import static com.example.iem.mapapp.R.id.toolbarChoixLigne;
 
 
 public class MapsActivity extends AbstractMapActivity
-        implements NavigationView.OnNavigationItemSelectedListener , OnMapReadyCallback,OnInfoWindowClickListener {
+        implements NavigationView.OnNavigationItemSelectedListener , OnMapReadyCallback,OnInfoWindowClickListener,
+        CallbackButtonClick {
 
-
+    //maps
     private GoogleMap mMap;
-    private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
+    private SupportMapFragment mapFragment;
+
+    //toolbar
+    private Toolbar toolbarMain;
+    private Toolbar toolbarChoixLigne;
+    private Toolbar toolbarRechercheTrajet;
+
+    //bottom bar
+    private BottomBar bottomBar;
+
+    //Boutons dans la top bar pour les lignes;
+    private Button btLigne1;
+    private Button btLigne2;
+    private Button btLigne3;
+    private Button btLigne4;
+    private Button btLigne5;
+    private Button btLigne6;
+    private Button btLigne7;
+    private Button btLigne8;
+
+    private List<String> listDataHeader;
+    private HashMap<String, List<String>> listDataChild;
+    private LinesAndStops linesAndStops;
     private ApiRequest apiRequest;
     private Boolean needsInit = false;
-
-    private Toolbar toolbar;
-    private LinesAndStops linesAndStops;
-
-
-    ExpandableListAdapter listAdapter;
-    ExpandableListView expListView;
-    List<String> listDataHeader;
-    HashMap<String, List<String>> listDataChild;
+    private List<ButtonCliqueListener> listeners;
+    private List<Integer> listLineDisplay;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (readyToGo()) {
-            setContentView(R.layout.activity_main);
-            toolbar = (Toolbar) findViewById(R.id.toolbar);
-            toolbar.setTitle("All");
-            setSupportActionBar(toolbar);
+            setContentView(R.layout.activity_main_v2);
 
-            apiRequest = ApiRequest.getInstance();
+            initUIComponent();
+
+            toolbarMain.setTitle("TUB");
+            setSupportActionBar(toolbarMain);
+
+            /*exemple d'implementation
+            String colorDefault = "#5500FF";
+            ((GradientDrawable)btLigne1.getBackground()).setColor(Color.parseColor(colorDefault));*/
+            listeners = new ArrayList<>();
+            listLineDisplay = new ArrayList<>();
+            for (int i = 0; i < 8; i++) {
+                listeners.add(new ButtonCliqueListener(this,i));
+            }
+            btLigne1.setOnClickListener(listeners.get(0));
+            btLigne2.setOnClickListener(listeners.get(1));
+            btLigne3.setOnClickListener(listeners.get(2));
+            btLigne4.setOnClickListener(listeners.get(3));
+            btLigne5.setOnClickListener(listeners.get(4));
+            btLigne6.setOnClickListener(listeners.get(5));
+            btLigne7.setOnClickListener(listeners.get(6));
+            btLigne8.setOnClickListener(listeners.get(7));
 
 
-            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                    this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-            drawer.setDrawerListener(toggle);
-            toggle.syncState();
-
-            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-            navigationView.setNavigationItemSelectedListener(this);
-
-            menuListInit();
-            expListView = (ExpandableListView) findViewById(R.id.ExpandableList);
-
-            listAdapter = new ExpandableListAdapterPerso(this, listDataHeader, listDataChild);
-            expListView.setAdapter(listAdapter);
-
-            Button displayNetworkButton = (Button)findViewById(R.id.btnDisplayNetwork);
-            displayNetworkButton.setOnClickListener(new OnClickListener() {
+            bottomBar.setOnTabSelectListener(new OnTabSelectListener() {
                 @Override
-                public void onClick(View v) {
-                    Toast.makeText(getBaseContext(), "LOAD NETWORK"
-                            , Toast.LENGTH_LONG).show();
-                    loadNetwork();
+                public void onTabSelected(@IdRes int tabId) {
+                    switch (tabId){
+                        case R.id.tab_ligne:
+                            toolbarChoixLigne.setVisibility(View.VISIBLE);
+                            toolbarRechercheTrajet.setVisibility(View.GONE);
+                            break;
+                        case R.id.tab_direction:
+                            toolbarChoixLigne.setVisibility(View.GONE);
+                            toolbarRechercheTrajet.setVisibility(View.VISIBLE);
+                            break;
+                    }
                 }
             });
 
 
-            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                    .findFragmentById(map);
+            apiRequest = ApiRequest.getInstance();
+
+
+            menuListInit();
+
 
             if (savedInstanceState == null) {
                 needsInit = true;
@@ -123,9 +159,124 @@ public class MapsActivity extends AbstractMapActivity
         }
     }
 
+    private void initUIComponent(){
+        //Top bar
+        toolbarMain = (Toolbar) findViewById(R.id.toolbar);
+        toolbarChoixLigne = (Toolbar) findViewById(R.id.toolbarChoixLigne);
+        toolbarRechercheTrajet = (Toolbar) findViewById(R.id.toolbarRechercheTrajet);
+
+        //Bottom bar
+
+        bottomBar = (BottomBar) findViewById(R.id.bottomBar);
+
+        //bt Ligne 2nd Top bar
+        btLigne1 = (Button) findViewById(R.id.bt_ligne1);
+        btLigne2 = (Button) findViewById(R.id.bt_ligne2);
+        btLigne3 = (Button) findViewById(R.id.bt_ligne3);
+        btLigne4 = (Button) findViewById(R.id.bt_ligne4);
+        btLigne5 = (Button) findViewById(R.id.bt_ligne5);
+        btLigne6 = (Button) findViewById(R.id.bt_ligne6);
+        btLigne7 = (Button) findViewById(R.id.bt_ligne7);
+        btLigne8 = (Button) findViewById(R.id.bt_ligne8);
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(map);
+    }
 
 
-    private void loadNetwork(){
+
+    Thread loadNetwork = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            String lines=null;
+
+            linesAndStops=null;
+
+            lines = apiRequest.getlinesAndStops();
+
+            ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
+            try {
+                linesAndStops  = mapper.readValue(lines,LinesAndStops.class);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            /*ArrayList<LatLng> linesPoints = new ArrayList<>();
+            LineString aLine=null;
+            for(Line aMultiLine : linesAndStops.getLines()) {
+                for (int i=0; i < aMultiLine.getLines().getNumGeometries();i++ ) {
+                    aLine = (LineString) aMultiLine.getLines().getGeometryN(i);
+                    final PolylineOptions polyOptions = new PolylineOptions().color(Color.parseColor(aMultiLine.getColor()))
+                            ;
+                    for (int coordinatesIndex = 0; coordinatesIndex < aLine.getCoordinates().length; coordinatesIndex++) {
+                        // linesPoints.add();
+                        polyOptions.add(new LatLng(aLine.getCoordinates()[coordinatesIndex].y,aLine.getCoordinates()[coordinatesIndex].x));
+                    }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mMap.addPolyline(polyOptions);
+                        }
+                    });
+
+                }
+            }*/
+
+            LocalDateTime localDateTime = new LocalDateTime();
+
+            /*for (Stop aStop: linesAndStops.getStops())
+            {
+                //building test data to remove
+                ArrayList<Schedule> testSchedules= new ArrayList<>();
+                Schedule s1 = new Schedule();
+                String dateExemple ="09:15";
+                String dateExemple2 ="17:45";
+
+                DateTimeFormatter format = DateTimeFormat.forPattern("HH:mm");
+                DateTime extractedTime = format.parseDateTime(dateExemple);
+                DateTime extractedTime2 = format.parseDateTime(dateExemple2);
+
+                ArrayList<DateTime> dates = new ArrayList<>();
+                dates.add(extractedTime);
+                dates.add(extractedTime2);
+
+                s1.setSchedules(dates);
+                ArrayList<Schedule> stopSchedules = new ArrayList<>();
+                stopSchedules.add(s1);
+                aStop.setSchedules(stopSchedules);
+
+                //End building
+                final MarkerOptions opt = new MarkerOptions()
+                        .position(new LatLng(aStop.getPoint().getX(), aStop.getPoint().getY()))
+                        .title(aStop.getLabel());
+
+                String oldSnippet="";
+                for(DateTime time : aStop.getSchedules().get(0).getSchedules()) {
+                    if (opt.getSnippet()!=null)
+                        oldSnippet= opt.getSnippet();
+                    if(time.getHourOfDay() == localDateTime.getHourOfDay()  ) {
+                        if (time.getMinuteOfHour() > localDateTime.getMinuteOfHour()) {
+                            opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
+                        }
+                    } else if(time.getHourOfDay() > localDateTime.getHourOfDay()  ) {
+                        opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
+                    }
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mMap.addMarker(opt);
+                    }
+                });
+
+            }*/
+        }
+    });
+
+    /*private void loadNetwork(){
         String lines=null;
 
         linesAndStops=null;
@@ -161,7 +312,7 @@ public class MapsActivity extends AbstractMapActivity
 
         for (Stop aStop: linesAndStops.getStops())
         {
-            /* building test data to remove */
+             //building test data to remove
             ArrayList<Schedule> testSchedules= new ArrayList<>();
             Schedule s1 = new Schedule();
             String dateExemple ="09:15";
@@ -180,7 +331,7 @@ public class MapsActivity extends AbstractMapActivity
             stopSchedules.add(s1);
             aStop.setSchedules(stopSchedules);
 
-            /* End building */
+            //End building
             MarkerOptions opt = new MarkerOptions()
                     .position(new LatLng(aStop.getPoint().getX(), aStop.getPoint().getY()))
                     .title(aStop.getLabel());
@@ -198,25 +349,8 @@ public class MapsActivity extends AbstractMapActivity
                 }
             }
             mMap.addMarker(opt);
-
-
-
         }
-
-
-
-
-    }
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
+    }*/
 
     private void menuListInit(){
         listDataHeader = new ArrayList<String>();
@@ -244,34 +378,11 @@ public class MapsActivity extends AbstractMapActivity
 
 
 
-
-
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-
-
+        loadNetwork.start();
         mMap = googleMap;
-
-
-        // Add a marker in Sydney and move the camera
-
         checkPermission();
-
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-
-
-
     }
 
 
@@ -338,6 +449,7 @@ public class MapsActivity extends AbstractMapActivity
         if (ContextCompat.checkSelfPermission(this,  android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
+            moveButtonLocation();
             Log.d("SUCCESS","Permission de localisation");
         } else {
             Log.d("Erreur Permission","Permission de localisation");
@@ -355,6 +467,22 @@ public class MapsActivity extends AbstractMapActivity
                 .snippet(getString(snippet)));
     }
 
+    private void moveButtonLocation(){
+
+        View mapView = mapFragment.getView();
+        if (mapView != null && mapView.findViewById(1) != null) {
+            // Get the button view
+            View locationButton = ((View) mapView.findViewById(1).getParent()).findViewById(2);
+            // and next place it, on bottom right (as Google Maps app)
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
+                    locationButton.getLayoutParams();
+            // position on right bottom
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            layoutParams.setMargins(0, 0, 30, 30);
+        }
+    }
+
 
 
     @Override
@@ -363,4 +491,32 @@ public class MapsActivity extends AbstractMapActivity
         u++;
     }
 
+    @Override
+    public void displayLine(int number) {
+        Line line = linesAndStops.getLines().get(number);
+        LineString aLine=null;
+        for (int i=0; i < line.getLines().getNumGeometries();i++ ) {
+            aLine = (LineString) line.getLines().getGeometryN(i);
+            final PolylineOptions polyOptions = new PolylineOptions().color(Color.parseColor(line.getColor()))
+                    ;
+            for (int coordinatesIndex = 0; coordinatesIndex < aLine.getCoordinates().length; coordinatesIndex++) {
+                polyOptions.add(new LatLng(aLine.getCoordinates()[coordinatesIndex].y,aLine.getCoordinates()[coordinatesIndex].x));
+            }
+                    mMap.addPolyline(polyOptions);
+        }
+        listLineDisplay.add(number);
+    }
+
+    @Override
+    public void removeLine(int number) {
+        mMap.clear();
+        for (int i = 0; i < listLineDisplay.size() ; i++) {
+            int n = listLineDisplay.get(i);
+            if(n == number){
+                listLineDisplay.remove(i);
+                continue;
+            }
+            displayLine(n);
+        }
+    }
 }

@@ -15,6 +15,7 @@ import app.model.Stop;
 /**
  * Created by iem on 02/12/2016.
  */
+
 public class ApiRequest {
     private static ApiRequest ourInstance = new ApiRequest();
     private String ip_url ="http://178.62.77.239:8080";
@@ -25,6 +26,7 @@ public class ApiRequest {
     }
 
     private ApiRequest() {
+
     }
 
 
@@ -100,7 +102,7 @@ public class ApiRequest {
     public String httpRequest(String url){
         BufferedReader in;
         try {
-            URL urlGetNetwork = new URL(ip_url+url);
+            URL urlGetNetwork = new URL(ip_url + url);
             HttpURLConnection urlConnection = (HttpURLConnection) urlGetNetwork.openConnection();
             String readLine="";
             String response="";
