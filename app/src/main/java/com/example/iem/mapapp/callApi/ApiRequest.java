@@ -18,7 +18,7 @@ import app.model.Stop;
 
 public class ApiRequest {
     private static ApiRequest ourInstance = new ApiRequest();
-    private String ip_url ="http://178.62.77.239:8080";
+    private String ip_url ="http://jonas-paul.me:8080";
 
 
     public static ApiRequest getInstance() {

@@ -7,4 +7,9 @@
     <string name="textAppbarLigneDepart">Départ : </string>
     <string name="textAppbarLigneArriver">Arriver : </string>
 
+    <string name="textSelectionLigne">Sélectionnez les lignes que vous voullez afficher</string>
+    <string name="textSelectItineraire">Remplissez votre arret de départ ainsi que celui au quel vous voulez aller</string>
+
+
+
 </resources>

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "871568912497",
+    "project_id": "firebase-apptube"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:871568912497:android:d41eac2f99b4eb09",
+        "android_client_info": {
+          "package_name": "com.example.iem.mapapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "871568912497-4dkk1jtv3fld3cg2ode0hv2o3t4d1voo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.iem.mapapp",
+            "certificate_hash": "81b9007e7c72079da1b775f3b3caf75e7551b91d"
+          }
+        },
+        {
+          "client_id": "871568912497-cogk69df5cll43k7psork27kumlnk70p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM9hV83qUIw3iIqKEwIP2HNiJPwm3MGC8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

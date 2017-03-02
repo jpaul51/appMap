@@ -3,33 +3,32 @@ package com.example.iem.mapapp;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.NavigationView;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
-import android.widget.ExpandableListView.OnChildClickListener;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import com.example.iem.mapapp.callApi.ApiRequest;
 import com.example.iem.mapapp.interfaces.CallbackButtonClick;
 import com.example.iem.mapapp.listener.ButtonCliqueListener;
+import com.example.iem.mapapp.model.Line;
+import com.example.iem.mapapp.model.LinesAndStops;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
@@ -38,36 +37,25 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.wallet.firstparty.GetBuyFlowInitializationTokenResponse;
 import com.roughike.bottombar.BottomBar;
 import com.roughike.bottombar.OnTabSelectListener;
 import com.vividsolutions.jts.geom.LineString;
 
-import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
-import app.model.Line;
-import app.model.LinesAndStops;
-import app.model.Schedule;
-import app.model.Stop;
-
-import static com.example.iem.mapapp.R.id.map;
-import static com.example.iem.mapapp.R.id.toolbarChoixLigne;
+import static com.example.iem.mapapp.utils.Constante.RC_SIGN_IN;
 
 
 public class MapsActivity extends AbstractMapActivity
-        implements NavigationView.OnNavigationItemSelectedListener , OnMapReadyCallback,OnInfoWindowClickListener,
-        CallbackButtonClick {
+        implements OnMapReadyCallback,OnInfoWindowClickListener,
+        CallbackButtonClick, GoogleApiClient.OnConnectionFailedListener {
 
     //maps
     private GoogleMap mMap;
@@ -91,13 +79,19 @@ public class MapsActivity extends AbstractMapActivity
     private Button btLigne7;
     private Button btLigne8;
 
-    private List<String> listDataHeader;
-    private HashMap<String, List<String>> listDataChild;
     private LinesAndStops linesAndStops;
     private ApiRequest apiRequest;
     private Boolean needsInit = false;
     private List<ButtonCliqueListener> listeners;
     private List<Integer> listLineDisplay;
+    private List<Polyline> listLineDisplayPolyline;
+    private SignInButton signInButtonGoogle;
+    private GoogleApiClient mGoogleApiClient;
+    private GoogleSignInAccount account;
+    private TextView textViewInformation;
+    private boolean isSignIn = false;
+    private boolean selectLine = true;
+    private String messageIndicatif;
 
 
     @Override
@@ -107,15 +101,38 @@ public class MapsActivity extends AbstractMapActivity
             setContentView(R.layout.activity_main_v2);
 
             initUIComponent();
+            updateUI(false);
 
             toolbarMain.setTitle("TUB");
             setSupportActionBar(toolbarMain);
+
+            GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                    .build();
+
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .enableAutoManage(this , this )
+                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                    .build();
+
+            signInButtonGoogle.setSize(SignInButton.SIZE_ICON_ONLY);
+            signInButtonGoogle.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(isSignIn){
+                        signOut();
+                    }else{
+                        signInWithGoogle();
+                    }
+                }
+            });
 
             /*exemple d'implementation
             String colorDefault = "#5500FF";
             ((GradientDrawable)btLigne1.getBackground()).setColor(Color.parseColor(colorDefault));*/
             listeners = new ArrayList<>();
             listLineDisplay = new ArrayList<>();
+            listLineDisplayPolyline = new ArrayList<>();
             for (int i = 0; i < 8; i++) {
                 listeners.add(new ButtonCliqueListener(this,i));
             }
@@ -136,25 +153,25 @@ public class MapsActivity extends AbstractMapActivity
                         case R.id.tab_ligne:
                             toolbarChoixLigne.setVisibility(View.VISIBLE);
                             toolbarRechercheTrajet.setVisibility(View.GONE);
+                            selectLine = true;
                             break;
                         case R.id.tab_direction:
                             toolbarChoixLigne.setVisibility(View.GONE);
                             toolbarRechercheTrajet.setVisibility(View.VISIBLE);
+                            selectLine = false;
                             break;
                     }
+                    updateUI(isSignIn);
                 }
             });
 
 
             apiRequest = ApiRequest.getInstance();
 
-
-            menuListInit();
-
-
             if (savedInstanceState == null) {
                 needsInit = true;
             }
+
             mapFragment.getMapAsync(this);
         }
     }
@@ -180,11 +197,85 @@ public class MapsActivity extends AbstractMapActivity
         btLigne8 = (Button) findViewById(R.id.bt_ligne8);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        //mapFragment = (SupportMapFragment) getSupportFragmentManager()
+               // .findFragmentById(map);
+
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(map);
+                .findFragmentById(R.id.map);
+
+        //Button sign in google
+
+        signInButtonGoogle = (SignInButton) findViewById(R.id.google_sign_in_button);
+
+        textViewInformation = (TextView) findViewById(R.id.textInformation);
+
     }
 
+//region Google authentification
+    private void signInWithGoogle() {
+        if(mGoogleApiClient != null) {
+            mGoogleApiClient.disconnect();
+        }
 
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+        final Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    private void signOut() {
+        System.out.println(mGoogleApiClient.isConnected());
+        if(mGoogleApiClient.isConnected()){
+            Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+        }
+        updateUI(false);
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    private void handleSignInResult(GoogleSignInResult result) {
+        if (result.isSuccess()) {
+            mGoogleApiClient.connect();
+            account = result.getSignInAccount();
+            updateUI(true);
+        } else {
+            updateUI(false);
+        }
+    }
+
+    private void updateUI(boolean signedIn) {
+        if(selectLine){
+            messageIndicatif = getResources().getString(R.string.textSelectionLigne);
+        }else{
+            messageIndicatif = getResources().getString(R.string.textSelectItineraire);
+        }
+        if (signedIn) {
+            isSignIn = true;
+            messageIndicatif = account.getGivenName() + " " + messageIndicatif.toLowerCase();
+        } else {
+            isSignIn = false;
+        }
+        textViewInformation.setText(messageIndicatif);
+    }
+
+//endregion
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == RC_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            handleSignInResult(result);
+        }
+    }
 
     Thread loadNetwork = new Thread(new Runnable() {
         @Override
@@ -196,183 +287,20 @@ public class MapsActivity extends AbstractMapActivity
             lines = apiRequest.getlinesAndStops();
 
             ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
-            try {
-                linesAndStops  = mapper.readValue(lines,LinesAndStops.class);
+            if(mapper != null && lines != null) {
+                try {
+                    linesAndStops  = mapper.readValue(lines,LinesAndStops.class);
 
-            } catch (IOException e) {
-                e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
-            /*ArrayList<LatLng> linesPoints = new ArrayList<>();
-            LineString aLine=null;
-            for(Line aMultiLine : linesAndStops.getLines()) {
-                for (int i=0; i < aMultiLine.getLines().getNumGeometries();i++ ) {
-                    aLine = (LineString) aMultiLine.getLines().getGeometryN(i);
-                    final PolylineOptions polyOptions = new PolylineOptions().color(Color.parseColor(aMultiLine.getColor()))
-                            ;
-                    for (int coordinatesIndex = 0; coordinatesIndex < aLine.getCoordinates().length; coordinatesIndex++) {
-                        // linesPoints.add();
-                        polyOptions.add(new LatLng(aLine.getCoordinates()[coordinatesIndex].y,aLine.getCoordinates()[coordinatesIndex].x));
-                    }
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mMap.addPolyline(polyOptions);
-                        }
-                    });
-
-                }
-            }*/
 
             LocalDateTime localDateTime = new LocalDateTime();
 
-            /*for (Stop aStop: linesAndStops.getStops())
-            {
-                //building test data to remove
-                ArrayList<Schedule> testSchedules= new ArrayList<>();
-                Schedule s1 = new Schedule();
-                String dateExemple ="09:15";
-                String dateExemple2 ="17:45";
-
-                DateTimeFormatter format = DateTimeFormat.forPattern("HH:mm");
-                DateTime extractedTime = format.parseDateTime(dateExemple);
-                DateTime extractedTime2 = format.parseDateTime(dateExemple2);
-
-                ArrayList<DateTime> dates = new ArrayList<>();
-                dates.add(extractedTime);
-                dates.add(extractedTime2);
-
-                s1.setSchedules(dates);
-                ArrayList<Schedule> stopSchedules = new ArrayList<>();
-                stopSchedules.add(s1);
-                aStop.setSchedules(stopSchedules);
-
-                //End building
-                final MarkerOptions opt = new MarkerOptions()
-                        .position(new LatLng(aStop.getPoint().getX(), aStop.getPoint().getY()))
-                        .title(aStop.getLabel());
-
-                String oldSnippet="";
-                for(DateTime time : aStop.getSchedules().get(0).getSchedules()) {
-                    if (opt.getSnippet()!=null)
-                        oldSnippet= opt.getSnippet();
-                    if(time.getHourOfDay() == localDateTime.getHourOfDay()  ) {
-                        if (time.getMinuteOfHour() > localDateTime.getMinuteOfHour()) {
-                            opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
-                        }
-                    } else if(time.getHourOfDay() > localDateTime.getHourOfDay()  ) {
-                        opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
-                    }
-                }
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mMap.addMarker(opt);
-                    }
-                });
-
-            }*/
         }
     });
-
-    /*private void loadNetwork(){
-        String lines=null;
-
-        linesAndStops=null;
-
-        lines = apiRequest.getlinesAndStops();
-
-        ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
-        try {
-            linesAndStops  = mapper.readValue(lines,LinesAndStops.class);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        ArrayList<LatLng> linesPoints = new ArrayList<>();
-        LineString aLine=null;
-        for(Line aMultiLine : linesAndStops.getLines()) {
-            for (int i=0; i < aMultiLine.getLines().getNumGeometries();i++ ) {
-                aLine = (LineString) aMultiLine.getLines().getGeometryN(i);
-                PolylineOptions polyOptions = new PolylineOptions().color(Color.parseColor(aMultiLine.getColor()))
-                        ;
-                for (int coordinatesIndex = 0; coordinatesIndex < aLine.getCoordinates().length; coordinatesIndex++) {
-                    // linesPoints.add();
-                    polyOptions.add(new LatLng(aLine.getCoordinates()[coordinatesIndex].y,aLine.getCoordinates()[coordinatesIndex].x));
-                }
-
-
-                mMap.addPolyline(polyOptions);
-            }
-        }
-
-        LocalDateTime localDateTime = new LocalDateTime();
-
-        for (Stop aStop: linesAndStops.getStops())
-        {
-             //building test data to remove
-            ArrayList<Schedule> testSchedules= new ArrayList<>();
-            Schedule s1 = new Schedule();
-            String dateExemple ="09:15";
-            String dateExemple2 ="17:45";
-
-            DateTimeFormatter format = DateTimeFormat.forPattern("HH:mm");
-            DateTime extractedTime = format.parseDateTime(dateExemple);
-            DateTime extractedTime2 = format.parseDateTime(dateExemple2);
-
-            ArrayList<DateTime> dates = new ArrayList<>();
-            dates.add(extractedTime);
-            dates.add(extractedTime2);
-
-            s1.setSchedules(dates);
-            ArrayList<Schedule> stopSchedules = new ArrayList<>();
-            stopSchedules.add(s1);
-            aStop.setSchedules(stopSchedules);
-
-            //End building
-            MarkerOptions opt = new MarkerOptions()
-                    .position(new LatLng(aStop.getPoint().getX(), aStop.getPoint().getY()))
-                    .title(aStop.getLabel());
-
-            String oldSnippet="";
-            for(DateTime time : aStop.getSchedules().get(0).getSchedules()) {
-                if (opt.getSnippet()!=null)
-                    oldSnippet= opt.getSnippet();
-                if(time.getHourOfDay() == localDateTime.getHourOfDay()  ) {
-                    if (time.getMinuteOfHour() > localDateTime.getMinuteOfHour()) {
-                        opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
-                    }
-                } else if(time.getHourOfDay() > localDateTime.getHourOfDay()  ) {
-                    opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
-                }
-            }
-            mMap.addMarker(opt);
-        }
-    }*/
-
-    private void menuListInit(){
-        listDataHeader = new ArrayList<String>();
-        listDataChild = new HashMap<String, List<String>>();
-        listDataHeader.add("Lignes");
-        listDataChild.put(listDataHeader.get(0),apiRequest.getLinesName());
-
-    }
-
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-
-        /*DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);*/
-        return true;
-    }
 
 
 
@@ -469,10 +397,10 @@ public class MapsActivity extends AbstractMapActivity
 
     private void moveButtonLocation(){
 
-        View mapView = mapFragment.getView();
-        if (mapView != null && mapView.findViewById(1) != null) {
+        View view = mapFragment.getView();
+        if (mapFragment != null && view.findViewById(1) != null) {
             // Get the button view
-            View locationButton = ((View) mapView.findViewById(1).getParent()).findViewById(2);
+            View locationButton = ((View) view.findViewById(1).getParent()).findViewById(2);
             // and next place it, on bottom right (as Google Maps app)
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
                     locationButton.getLayoutParams();
@@ -493,30 +421,34 @@ public class MapsActivity extends AbstractMapActivity
 
     @Override
     public void displayLine(int number) {
-        Line line = linesAndStops.getLines().get(number);
-        LineString aLine=null;
-        for (int i=0; i < line.getLines().getNumGeometries();i++ ) {
-            aLine = (LineString) line.getLines().getGeometryN(i);
-            final PolylineOptions polyOptions = new PolylineOptions().color(Color.parseColor(line.getColor()))
-                    ;
-            for (int coordinatesIndex = 0; coordinatesIndex < aLine.getCoordinates().length; coordinatesIndex++) {
-                polyOptions.add(new LatLng(aLine.getCoordinates()[coordinatesIndex].y,aLine.getCoordinates()[coordinatesIndex].x));
+        if(linesAndStops != null){
+            Line line = linesAndStops.getLines().get(number);
+            LineString aLine=null;
+            for (int i=0; i < line.getLines().getNumGeometries();i++ ) {
+                aLine = (LineString) line.getLines().getGeometryN(i);
+                final PolylineOptions polyOptions = new PolylineOptions().color(Color.parseColor(line.getColor()))
+                        ;
+                for (int coordinatesIndex = 0; coordinatesIndex < aLine.getCoordinates().length; coordinatesIndex++) {
+                    polyOptions.add(new LatLng(aLine.getCoordinates()[coordinatesIndex].y,aLine.getCoordinates()[coordinatesIndex].x));
+                }
+                Polyline polyline = mMap.addPolyline(polyOptions);
+                listLineDisplayPolyline.add(polyline);
+
             }
-                    mMap.addPolyline(polyOptions);
+            listLineDisplay.add(number);
         }
-        listLineDisplay.add(number);
     }
 
     @Override
     public void removeLine(int number) {
-        mMap.clear();
         for (int i = 0; i < listLineDisplay.size() ; i++) {
             int n = listLineDisplay.get(i);
-            if(n == number){
-                listLineDisplay.remove(i);
+            if (n != number)
                 continue;
-            }
-            displayLine(n);
+            listLineDisplay.remove(i);
+            listLineDisplayPolyline.get(i).remove();
         }
     }
+
+
 }

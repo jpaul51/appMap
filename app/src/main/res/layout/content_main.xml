@@ -7,8 +7,7 @@
     android:layout_height="match_parent"
     android:layout_marginBottom="55dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.iem.mapapp.MapsActivity"
-    tools:showIn="@layout/app_bar_main">
+    tools:context="com.example.iem.mapapp.MapsActivity">
 
     <fragment
         android:id="@+id/map"

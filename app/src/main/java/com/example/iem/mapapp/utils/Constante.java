@@ -5,6 +5,7 @@ package com.example.iem.mapapp.utils;
  */
 
 public interface Constante {
-    String INTENT_LIST_NAME_LINES="list_name_lines";
+    String INTENT_LIST_NAME_LINES = "list_name_lines";
+    int RC_SIGN_IN = 9001;
 
 }
