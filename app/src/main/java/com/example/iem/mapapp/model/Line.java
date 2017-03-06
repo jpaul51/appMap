@@ -1,6 +1,8 @@
 package com.example.iem.mapapp.model;
 
-import org.geojson.MultiLineString;
+
+
+import com.vividsolutions.jts.geom.MultiLineString;
 
 import java.io.Serializable;
 
@@ -11,11 +13,11 @@ import java.io.Serializable;
 public class Line implements Serializable{
 
     Long id;
-    String name;
+    String label;
     String color;
 
     MultiLineString lines=null;
-    String pathFile;
+    String kml_path;
 
     public Line(){
 
@@ -25,12 +27,12 @@ public class Line implements Serializable{
     {
         this.id=id;
     }
-    public Line(Long id, String name, String color, String pathFile) {
+    public Line(Long id, String label, String color, String kml_path) {
         super();
         this.id = id;
-        this.name = name;
+        this.label = label;
         this.color = color;
-        this.pathFile = pathFile;
+        this.kml_path = kml_path;
         lines=null;
     }
     public Long getId() {
@@ -39,11 +41,11 @@ public class Line implements Serializable{
     public void setId(Long id) {
         this.id = id;
     }
-    public String getName() {
-        return name;
+    public String getLabel() {
+        return label;
     }
-    public void setName(String name) {
-        this.name = name;
+    public void setLabel(String label) {
+        this.label = label;
     }
     public String getColor() {
         return color;
@@ -57,10 +59,5 @@ public class Line implements Serializable{
     public void setLines(MultiLineString lines) {
         this.lines = lines;
     }
-    public String getPathFile() {
-        return pathFile;
-    }
-    public void setPathFile(String pathFile) {
-        this.pathFile = pathFile;
-    }
+
 }

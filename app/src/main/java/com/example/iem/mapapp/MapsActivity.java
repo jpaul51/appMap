@@ -48,6 +48,7 @@ import org.joda.time.LocalDateTime;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.example.iem.mapapp.utils.Constante.RC_SIGN_IN;
@@ -83,8 +84,8 @@ public class MapsActivity extends AbstractMapActivity
     private ApiRequest apiRequest;
     private Boolean needsInit = false;
     private List<ButtonCliqueListener> listeners;
-    private List<Integer> listLineDisplay;
-    private List<Polyline> listLineDisplayPolyline;
+   // private List<Integer> listLineDisplay;
+    private HashMap<Integer,List<Polyline>> displayedLines;
     private SignInButton signInButtonGoogle;
     private GoogleApiClient mGoogleApiClient;
     private GoogleSignInAccount account;
@@ -92,6 +93,8 @@ public class MapsActivity extends AbstractMapActivity
     private boolean isSignIn = false;
     private boolean selectLine = true;
     private String messageIndicatif;
+
+
 
 
     @Override
@@ -131,8 +134,9 @@ public class MapsActivity extends AbstractMapActivity
             String colorDefault = "#5500FF";
             ((GradientDrawable)btLigne1.getBackground()).setColor(Color.parseColor(colorDefault));*/
             listeners = new ArrayList<>();
-            listLineDisplay = new ArrayList<>();
-            listLineDisplayPolyline = new ArrayList<>();
+          //  listLineDisplay = new ArrayList<>();
+            displayedLines = new HashMap<>();
+           // listLineDisplayPolyline = new ArrayList<>();
             for (int i = 0; i < 8; i++) {
                 listeners.add(new ButtonCliqueListener(this,i));
             }
@@ -421,9 +425,12 @@ public class MapsActivity extends AbstractMapActivity
 
     @Override
     public void displayLine(int number) {
+        System.out.println("We here");
         if(linesAndStops != null){
+            System.out.println("YES");
             Line line = linesAndStops.getLines().get(number);
             LineString aLine=null;
+            ArrayList<Polyline> polyLines = new ArrayList<>();
             for (int i=0; i < line.getLines().getNumGeometries();i++ ) {
                 aLine = (LineString) line.getLines().getGeometryN(i);
                 final PolylineOptions polyOptions = new PolylineOptions().color(Color.parseColor(line.getColor()))
@@ -431,22 +438,25 @@ public class MapsActivity extends AbstractMapActivity
                 for (int coordinatesIndex = 0; coordinatesIndex < aLine.getCoordinates().length; coordinatesIndex++) {
                     polyOptions.add(new LatLng(aLine.getCoordinates()[coordinatesIndex].y,aLine.getCoordinates()[coordinatesIndex].x));
                 }
-                Polyline polyline = mMap.addPolyline(polyOptions);
-                listLineDisplayPolyline.add(polyline);
+                polyLines.add(mMap.addPolyline(polyOptions));
+               // listLineDisplayPolyline.add(  mMap.addPolyline(polyOptions));
+               // listLineDisplayPolyline.add(polyline);
 
             }
-            listLineDisplay.add(number);
+            displayedLines.put(number,polyLines);
+            //listLineDisplay.add(number);
         }
     }
 
     @Override
     public void removeLine(int number) {
-        for (int i = 0; i < listLineDisplay.size() ; i++) {
-            int n = listLineDisplay.get(i);
-            if (n != number)
-                continue;
-            listLineDisplay.remove(i);
-            listLineDisplayPolyline.get(i).remove();
+        System.out.println("We here");
+
+        ArrayList<Polyline> polylines = (ArrayList<Polyline>) displayedLines.get(number);
+
+        for(Polyline aLine : polylines)
+        {
+            aLine.remove();
         }
     }
 

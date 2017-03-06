@@ -18,7 +18,7 @@ import app.model.Stop;
 
 public class ApiRequest {
     private static ApiRequest ourInstance = new ApiRequest();
-    private String ip_url ="http://jonas-paul.me:8080";
+    private String ip_url ="http://172.16.1.159:8080";
 
 
     public static ApiRequest getInstance() {
@@ -101,7 +101,10 @@ public class ApiRequest {
 
     public String httpRequest(String url){
         BufferedReader in;
+        System.out.println("URL: "+ip_url+"||"+url);
         try {
+
+
             URL urlGetNetwork = new URL(ip_url + url);
             HttpURLConnection urlConnection = (HttpURLConnection) urlGetNetwork.openConnection();
             String readLine="";

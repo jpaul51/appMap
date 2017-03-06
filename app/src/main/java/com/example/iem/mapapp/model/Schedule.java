@@ -5,6 +5,10 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 import java.util.List;
 
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.datatype.joda.deser.DateTimeDeserializer;
+import com.fasterxml.jackson.datatype.joda.deser.LocalDateDeserializer;
 /**
  * Created by iem on 28/02/2017.
  */
@@ -12,6 +16,7 @@ import java.util.List;
 public class Schedule implements Serializable{
 
     long id;
+
     List<DateTime> schedules;
     List<String> constraints;
     String way;
