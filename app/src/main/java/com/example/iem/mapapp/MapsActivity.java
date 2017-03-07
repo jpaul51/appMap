@@ -13,6 +13,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
@@ -28,6 +31,7 @@ import com.example.iem.mapapp.model.LinesAndStops;
 import com.example.iem.mapapp.model.Schedule;
 import com.example.iem.mapapp.model.Stop;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.std.StringArrayDeserializer;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -107,10 +111,16 @@ public class MapsActivity extends AbstractMapActivity
     private boolean isSignIn = false;
     private boolean selectLine = true;
     private String messageIndicatif;
+    private Button signOut;
 
     private PopupAdapter popupAdapter;
     private HashMap<Marker,HashMap<Long,HashMap<String,List<DateTime>>>> infowindowContentByMarker;
     private HashMap<Marker,Stop> stopsByMarker;
+    private AutoCompleteTextView startStopView;
+    private AutoCompleteTextView endStopView;
+    private ArrayAdapter<String> adapterAutoComplete;
+    private ArrayList<String> listNameStop;
+    private boolean autoCompleteLoad = false;
 
 
     private  MapWrapperLayout wrapper;
@@ -142,13 +152,25 @@ public class MapsActivity extends AbstractMapActivity
             signInButtonGoogle.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if(isSignIn){
-                        signOut();
-                    }else{
+                    if(!isSignIn){
                         signInWithGoogle();
+
+
                     }
                 }
             });
+
+            signOut.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(isSignIn){
+                        signOut();
+                        signOut.setVisibility(View.GONE);
+                        signInButtonGoogle.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
+
 
             /*exemple d'implementation
             String colorDefault = "#5500FF";
@@ -178,17 +200,16 @@ public class MapsActivity extends AbstractMapActivity
                 public void onTabSelected(@IdRes int tabId) {
                     switch (tabId){
                         case R.id.tab_ligne:
-                            toolbarChoixLigne.setVisibility(View.VISIBLE);
-                            toolbarRechercheTrajet.setVisibility(View.GONE);
                             selectLine = true;
+                            updateUI(isSignIn);
                             break;
                         case R.id.tab_direction:
-                            toolbarChoixLigne.setVisibility(View.GONE);
-                            toolbarRechercheTrajet.setVisibility(View.VISIBLE);
                             selectLine = false;
+                            updateUI(isSignIn);
+                            loadAutoCompletion();
                             break;
                     }
-                    updateUI(isSignIn);
+
                 }
             });
 
@@ -209,6 +230,26 @@ public class MapsActivity extends AbstractMapActivity
             });
 
             mapFragment.getMapAsync(this);
+        }
+    }
+
+    private void  loadAutoCompletion(){
+        if(!autoCompleteLoad && linesAndStops != null){
+            startStopView = (AutoCompleteTextView) findViewById(R.id.tv_entrerNomLigneDepart);
+            endStopView = (AutoCompleteTextView) findViewById(R.id.tv_entrerNomLigneArriver);
+            startStopView.setThreshold(1);
+            endStopView.setThreshold(1);
+            autoCompleteLoad = true;
+            listNameStop = new ArrayList<>();
+            adapterAutoComplete = new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_list_item_1,listNameStop);
+            List<Stop> stopList = linesAndStops.getStops();
+            for (int i = 0; i < stopList.size(); i++){
+                listNameStop.add(stopList.get(i).getLabel());
+            }
+            startStopView.setAdapter(adapterAutoComplete);
+            endStopView.setAdapter(adapterAutoComplete);
+            ((BaseAdapter) startStopView.getAdapter()).notifyDataSetChanged();
+            ((BaseAdapter) endStopView.getAdapter()).notifyDataSetChanged();
         }
     }
 
@@ -268,6 +309,8 @@ public class MapsActivity extends AbstractMapActivity
 
         textViewInformation = (TextView) findViewById(R.id.textInformation);
 
+        signOut = (Button) findViewById(R.id.bt_disconnect);
+
     }
 
 //region Google authentification
@@ -317,10 +360,15 @@ public class MapsActivity extends AbstractMapActivity
             messageIndicatif = getResources().getString(R.string.textSelectItineraire);
         }
         if (signedIn) {
+            signInButtonGoogle.setVisibility(View.GONE);
             isSignIn = true;
             messageIndicatif = account.getGivenName() + " " + messageIndicatif.toLowerCase();
+            signOut.setVisibility(View.VISIBLE);
         } else {
+            signOut.setVisibility(View.GONE);
             isSignIn = false;
+            signInButtonGoogle.setVisibility(View.VISIBLE);
+
         }
         textViewInformation.setText(messageIndicatif);
     }
@@ -355,7 +403,6 @@ public class MapsActivity extends AbstractMapActivity
                 }
             }
 
-
             LocalDateTime localDateTime = new LocalDateTime();
 
         }
@@ -385,33 +432,6 @@ public class MapsActivity extends AbstractMapActivity
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int)(dp * scale + 0.5f);
     }
-
-    private String getFileName(String file){
-
-
-        String fileName = "";
-
-        int i = file.lastIndexOf('.');
-        if (i > 0) {
-            fileName = file.substring(0, i );
-        }
-        return fileName;
-
-
-    }
-
-
-    private InputStream openRawFileByName(String inputname)
-    {
-        InputStream ins =null;
-
-        ins = getResources().openRawResource(
-                getResources().getIdentifier(inputname,
-                        "raw", getPackageName()));
-
-        return ins;
-    }
-
 
 
     private void checkPermission(){

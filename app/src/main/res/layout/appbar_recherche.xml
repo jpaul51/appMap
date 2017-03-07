@@ -21,13 +21,14 @@
             android:gravity="center" />
 
         <AutoCompleteTextView
+            android:id="@+id/tv_entrerNomLigneDepart"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/tv_entrerNomLigneDepart"
-            android:layout_weight="1"
             android:layout_alignParentTop="true"
+            android:layout_marginRight="50dp"
+            android:layout_toEndOf="@+id/tv_ligneDepart"
             android:layout_toRightOf="@+id/tv_ligneDepart"
-            android:layout_toEndOf="@+id/tv_ligneDepart" />
+            android:layout_weight="1" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -46,23 +47,25 @@
 
         <AutoCompleteTextView
             android:id="@+id/tv_entrerNomLigneArriver"
-            android:layout_weight="10"
             android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_alignParentTop="true"
-            android:layout_toRightOf="@+id/tv_ligneArriver"
+            android:layout_marginRight="50dp"
             android:layout_toEndOf="@+id/tv_ligneArriver"
-            android:layout_height="match_parent" />
+            android:layout_toRightOf="@+id/tv_ligneArriver"
+            android:layout_weight="10" />
+
         <ImageButton
             android:id="@+id/btnSearch"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_alignParentRight="true"
-            android:src="@drawable/search"
-            android:text="Button"
-            android:layout_marginRight="5dp"
-            android:layout_marginBottom="5dp"
             android:layout_alignParentTop="true"
+            android:layout_marginBottom="5dp"
+            android:layout_marginRight="5dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/search"
 
-            android:scaleType="fitCenter" />/>
+            android:text="Button" />
     </RelativeLayout>
 </LinearLayout>
