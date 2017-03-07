@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.iem.mapapp.activity.DetailStop;
 import com.example.iem.mapapp.activity.MapWrapperLayout;
@@ -99,6 +100,7 @@ public class MapsActivity extends AbstractMapActivity
     private List<ButtonCliqueListener> listeners;
    // private List<Integer> listLineDisplay;
     private HashMap<Integer,List<Polyline>> displayedLines;
+    private HashMap<Integer,List<Polyline>> displayedLinesOnRoad;
     private HashMap<Stop,Marker> displayedMarkers;
     private SignInButton signInButtonGoogle;
     private GoogleApiClient mGoogleApiClient;
@@ -108,10 +110,13 @@ public class MapsActivity extends AbstractMapActivity
     private boolean selectLine = true;
     private String messageIndicatif;
 
+    private boolean networkFinished=false;
+
     private PopupAdapter popupAdapter;
     private HashMap<Marker,HashMap<Long,HashMap<String,List<DateTime>>>> infowindowContentByMarker;
     private HashMap<Marker,Stop> stopsByMarker;
 
+    private HashMap<Marker,Stop> stopsByMarkerRoad;
 
     private  MapWrapperLayout wrapper;
 
@@ -158,11 +163,15 @@ public class MapsActivity extends AbstractMapActivity
             displayedLines = new HashMap<>();
             displayedMarkers = new HashMap<>();
             infowindowContentByMarker = new HashMap<>();
+            stopsByMarkerRoad = new HashMap<>();
+            stopsByMarkerRoad = new HashMap<>();
             stopsByMarker = new HashMap<>();
+            displayedLinesOnRoad = new HashMap<>();
            // listLineDisplayPolyline = new ArrayList<>();
             for (int i = 0; i < 8; i++) {
                 listeners.add(new ButtonCliqueListener(this,i));
             }
+
             btLigne1.setOnClickListener(listeners.get(0));
             btLigne2.setOnClickListener(listeners.get(1));
             btLigne3.setOnClickListener(listeners.get(2));
@@ -220,20 +229,70 @@ public class MapsActivity extends AbstractMapActivity
         final TextView firstStop = (TextView) findViewById(R.id.tv_entrerNomLigneDepart);
         final TextView endStop = (TextView) findViewById(R.id.tv_entrerNomLigneArriver);
 
-        System.out.println("Let's find the shortest way");
 
-       new Thread(new Runnable() {
-           @Override
-           public void run() {
-               try {
-                   List<Stop> stops = apiRequest.getShortestWaybetween(firstStop.getText().toString(), endStop.getText().toString());
-                   System.out.println(stops.size());
-               } catch (IOException e) {
-                   e.printStackTrace();
-               }
-           }
-       }).start();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                   final  LinesAndStops linesAndStops = (LinesAndStops) apiRequest.getShortestWaybetween(firstStop.getText().toString(), endStop.getText().toString());
+                    // System.out.println(stops.size());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            loadRoad(linesAndStops);
+                        }
+                    });
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
+
+    private void loadRoad(LinesAndStops linesAndStops)
+    {
+
+        for(ButtonCliqueListener listener : listeners)
+        {
+            if(listener.isChecked())
+               listener.toogleUICheck();
+        }
+
+        mMap.clear();
+        for(Stop s : linesAndStops.getStops())
+       {
+            MarkerOptions opt = new MarkerOptions()
+                    .position(new LatLng(s.getPoint().getCoordinates().getLongitude(), s.getPoint().getCoordinates().getLatitude()))
+                    .title(s.getLabel());
+
+           System.out.println(mMap);
+           System.out.println(opt.getTitle());
+           System.out.println(s.getLabel());
+           stopsByMarkerRoad.put(mMap.addMarker(opt),s);
+
+           LineString aLine=null;
+           ArrayList<Polyline> polyLines = new ArrayList<>();
+           for(Line line : linesAndStops.getLines()) {
+               for (int i = 0; i < line.getLines().getNumGeometries(); i++) {
+                   aLine = (LineString) line.getLines().getGeometryN(i);
+                   final PolylineOptions polyOptions = new PolylineOptions().color(Color.parseColor(line.getColor()));
+                   for (int coordinatesIndex = 0; coordinatesIndex < aLine.getCoordinates().length; coordinatesIndex++) {
+                       polyOptions.add(new LatLng(aLine.getCoordinates()[coordinatesIndex].y, aLine.getCoordinates()[coordinatesIndex].x));
+                   }
+                  polyLines.add(mMap.addPolyline(polyOptions));
+                   displayedLinesOnRoad.put(i+1,polyLines);
+               }
+
+           }
+
+        }
+
+
+
+    }
+
 
     private void initUIComponent(){
         //Top bar
@@ -355,8 +414,8 @@ public class MapsActivity extends AbstractMapActivity
                 }
             }
 
+            networkFinished=true;
 
-            LocalDateTime localDateTime = new LocalDateTime();
 
         }
     });
@@ -476,7 +535,16 @@ public class MapsActivity extends AbstractMapActivity
     }
 
 
-
+private void removePolylynes(HashMap<Integer,List<Polyline>> line)
+{
+    if(line != null) {
+        for (Map.Entry<Integer, List<Polyline>> lines : line.entrySet()) {
+            for (Polyline aLine : lines.getValue()) {
+                aLine.remove();
+            }
+        }
+    }
+}
 
     @Override
     public void onInfoWindowClick(Marker marker) {
@@ -488,11 +556,17 @@ public class MapsActivity extends AbstractMapActivity
     @Override
     public void displayLine(int number) {
 
+        for(Map.Entry<Marker,Stop> markersToRemove : stopsByMarkerRoad.entrySet())
+        {
+            markersToRemove.getKey().remove();
+
+        }
+      removePolylynes(displayedLinesOnRoad);
+    stopsByMarker = new HashMap<>();
 
 
-        System.out.println("We here");
         if(linesAndStops != null){
-            System.out.println("YES");
+
 
            // Line line = linesAndStops.getLines().get(number);
             Line line = new Line();
@@ -622,11 +696,20 @@ public class MapsActivity extends AbstractMapActivity
 //        popupAdapter.setScheduleByWayByLine(infowindowContentByMarker.get(marker));
 //        popupAdapter.wrapper=this.wrapper;
 //         marker.showInfoWindow();
-
+    try {
         Intent intent = new Intent(MapsActivity.this, DetailStop.class);
-        intent.putExtra("stopData",infowindowContentByMarker.get(marker));
-        intent.putExtra("stopObject",stopsByMarker.get(marker));
+
+        intent.putExtra("stopData", infowindowContentByMarker.get(marker));
+        if (stopsByMarker.get(marker) != null)
+            intent.putExtra("stopObject", stopsByMarker.get(marker));
+        else
+            intent.putExtra("stopObject", stopsByMarkerRoad.get(marker));
         startActivity(intent);
+    }
+    catch(Exception e ){
+        Toast.makeText(MapsActivity.this,"An error has occured",Toast.LENGTH_SHORT);
+
+    }
         return true;
     }
 }

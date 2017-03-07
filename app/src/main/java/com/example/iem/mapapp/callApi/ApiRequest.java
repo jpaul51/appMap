@@ -2,6 +2,7 @@ package com.example.iem.mapapp.callApi;
 
 import com.example.iem.mapapp.JtsObjectMapper;
 import com.example.iem.mapapp.model.Line;
+import com.example.iem.mapapp.model.LinesAndStops;
 import com.example.iem.mapapp.model.Stop;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -96,18 +97,18 @@ public class ApiRequest {
         return null;
     }
 
-    public List<Stop> getShortestWaybetween(String firstStop, String secondStop) throws IOException {
+    public LinesAndStops getShortestWaybetween(String firstStop, String secondStop) throws IOException {
         String url = "/getShortestWayBetween?start="+firstStop+"&end="+secondStop;
         String response = httpRequest(url);
 
         ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
-        ArrayList<Stop> way = new ArrayList<>();
+        LinesAndStops result = new LinesAndStops();
         if(mapper != null && response !=null)
         {
-            way = mapper.readValue(response,new TypeReference<List<Stop>>(){});
+            result = mapper.readValue(response,LinesAndStops.class);
         }
 
-        return way;
+        return result;
 
     }
 

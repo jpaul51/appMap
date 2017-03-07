@@ -21,7 +21,7 @@ public class ButtonCliqueListener implements View.OnClickListener {
     private int colorActivated = Color.GREEN;
     private CallbackButtonClick callback;
     private int myNumber = -1;
-
+    private View currentView;
 
 
     public ButtonCliqueListener(String colorDefault, String colorActivated , CallbackButtonClick callback, int number) {
@@ -38,8 +38,17 @@ public class ButtonCliqueListener implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        GradientDrawable bgShape = (GradientDrawable)view.getBackground();
+        this.currentView = view;
+       toogleUICheck();
+
+    }
+
+
+    public void toogleUICheck()
+    {
+        GradientDrawable bgShape = (GradientDrawable)currentView.getBackground();
         toggleCheck();
+
         if(isChecked) {
             bgShape.setColor(colorActivated);
             callback.displayLine(myNumber);
@@ -73,4 +82,5 @@ public class ButtonCliqueListener implements View.OnClickListener {
     private void toggleCheck(){
         isChecked = !isChecked;
     }
+
 }
