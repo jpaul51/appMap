@@ -14,7 +14,7 @@ import org.joda.time.DateTime;
  * Created by Jonas on 28/11/2016.
  */
 
-public class JtsObjectMapper extends SimpleModule {
+public class CustomObjectMapper extends SimpleModule {
 
 
 

@@ -32,7 +32,6 @@ import com.example.iem.mapapp.model.LinesAndStops;
 import com.example.iem.mapapp.model.Schedule;
 import com.example.iem.mapapp.model.Stop;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.deser.std.StringArrayDeserializer;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -50,24 +49,18 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.maps.android.MarkerManager;
 import com.roughike.bottombar.BottomBar;
 import com.roughike.bottombar.OnTabSelectListener;
 import com.vividsolutions.jts.geom.LineString;
 
 import org.joda.time.DateTime;
-import org.joda.time.LocalDateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static com.example.iem.mapapp.utils.Constante.RC_SIGN_IN;
 
@@ -102,7 +95,6 @@ public class MapsActivity extends AbstractMapActivity
     private ApiRequest apiRequest;
     private Boolean needsInit = false;
     private List<ButtonCliqueListener> listeners;
-   // private List<Integer> listLineDisplay;
     private HashMap<Integer,List<Polyline>> displayedLines;
     private HashMap<Integer,List<Polyline>> displayedLinesOnRoad;
     private HashMap<Stop,Marker> displayedMarkers;
@@ -117,7 +109,7 @@ public class MapsActivity extends AbstractMapActivity
 
     private boolean networkFinished=false;
 
-    private PopupAdapter popupAdapter;
+
     private HashMap<Marker,HashMap<Long,HashMap<String,List<DateTime>>>> infowindowContentByMarker;
     private HashMap<Marker,Stop> stopsByMarker;
     private AutoCompleteTextView startStopView;
@@ -141,7 +133,7 @@ public class MapsActivity extends AbstractMapActivity
 
 
 
-            toolbarMain.setTitle("TUB");
+
             setSupportActionBar(toolbarMain);
 
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -179,7 +171,7 @@ public class MapsActivity extends AbstractMapActivity
             String colorDefault = "#5500FF";
             ((GradientDrawable)btLigne1.getBackground()).setColor(Color.parseColor(colorDefault));*/
             listeners = new ArrayList<>();
-          //  listLineDisplay = new ArrayList<>();
+
             displayedLines = new HashMap<>();
             displayedMarkers = new HashMap<>();
             infowindowContentByMarker = new HashMap<>();
@@ -187,7 +179,7 @@ public class MapsActivity extends AbstractMapActivity
             stopsByMarkerRoad = new HashMap<>();
             stopsByMarker = new HashMap<>();
             displayedLinesOnRoad = new HashMap<>();
-           // listLineDisplayPolyline = new ArrayList<>();
+
             for (int i = 0; i < 8; i++) {
                 listeners.add(new ButtonCliqueListener(this,i));
             }
@@ -279,7 +271,7 @@ public class MapsActivity extends AbstractMapActivity
             public void run() {
                 try {
                    final  LinesAndStops linesAndStops = (LinesAndStops) apiRequest.getShortestWaybetween(firstStop.getText().toString(), endStop.getText().toString());
-                    // System.out.println(stops.size());
+
                     if(linesAndStops.getLines().isEmpty() || linesAndStops.getStops().isEmpty())
                     {
                         Toast.makeText(MapsActivity.this,"These stops couldn't be found. Sorry",Toast.LENGTH_LONG);
@@ -338,7 +330,6 @@ public class MapsActivity extends AbstractMapActivity
         }
 
 
-
     }
 
 
@@ -361,10 +352,6 @@ public class MapsActivity extends AbstractMapActivity
         btLigne6 = (Button) findViewById(R.id.bt_ligne6);
         btLigne7 = (Button) findViewById(R.id.bt_ligne7);
         btLigne8 = (Button) findViewById(R.id.bt_ligne8);
-
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        //mapFragment = (SupportMapFragment) getSupportFragmentManager()
-               // .findFragmentById(map);
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -459,7 +446,7 @@ public class MapsActivity extends AbstractMapActivity
 
             lines = apiRequest.getlinesAndStops();
 
-            ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
+            ObjectMapper mapper = CustomObjectMapper.JtsObjectMapper();
             if(mapper != null && lines != null) {
                 try {
                     linesAndStops  = mapper.readValue(lines,LinesAndStops.class);
@@ -542,8 +529,7 @@ public class MapsActivity extends AbstractMapActivity
             LatLng centerOfBourg = new LatLng(46.202181, 5.237056);
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerOfBourg,zoomLevel));
         }
-        popupAdapter = new PopupAdapter(getLayoutInflater());
-        mMap.setInfoWindowAdapter(popupAdapter);
+
         mMap.setOnInfoWindowClickListener(this);
     }
 
@@ -616,19 +602,16 @@ private void removePolylynes(HashMap<Integer,List<Polyline>> line)
                     polyOptions.add(new LatLng(aLine.getCoordinates()[coordinatesIndex].y,aLine.getCoordinates()[coordinatesIndex].x));
                 }
                 polyLines.add(mMap.addPolyline(polyOptions));
-               // listLineDisplayPolyline.add(  mMap.addPolyline(polyOptions));
-               // listLineDisplayPolyline.add(polyline);
 
             }
             displayedLines.put(number+1,polyLines);
-            //listLineDisplay.add(number);
+
 
             ArrayList<Stop> stops = (ArrayList<Stop>) linesAndStops.getStops();
 
             for(Stop s : stops)
             {
-                //addMarker(mMap,s.getPoint().getCoordinates().getLatitude(),s.getPoint().getCoordinates().getLongitude(),"test",1);
-               // System.out.println("LINES: "+s.getLines() + " NUMBER: "+number+ " EQUALS: "+ s.getLines().contains((long)number));
+
               if(s.getLines().contains((long)number+1)) {
                   MarkerOptions opt = new MarkerOptions()
                           .position(new LatLng(s.getPoint().getCoordinates().getLongitude(), s.getPoint().getCoordinates().getLatitude()))
@@ -648,17 +631,6 @@ private void removePolylynes(HashMap<Integer,List<Polyline>> line)
 
                 }
 
-//                      for (DateTime time : s.getSchedules().get(scheduleNumber).getSchedules()) {
-//                          if (opt.getSnippet() != null)
-//                              oldSnippet = opt.getSnippet();
-//                          if (time.getHourOfDay() == localDateTime.getHourOfDay()) {
-//                              if (time.getMinuteOfHour() > localDateTime.getMinuteOfHour()) {
-//                                  opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
-//                              }
-//                          } else if (time.getHourOfDay() > localDateTime.getHourOfDay()) {
-//                              opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
-//                          }
-//                      }
 
                 if(!displayedMarkers.containsKey(s)) {
                     Marker marker = mMap.addMarker(opt);
@@ -722,9 +694,6 @@ private void removePolylynes(HashMap<Integer,List<Polyline>> line)
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-//        popupAdapter.setScheduleByWayByLine(infowindowContentByMarker.get(marker));
-//        popupAdapter.wrapper=this.wrapper;
-//         marker.showInfoWindow();
     try {
         Intent intent = new Intent(MapsActivity.this, DetailStop.class);
 
@@ -736,7 +705,7 @@ private void removePolylynes(HashMap<Integer,List<Polyline>> line)
         startActivity(intent);
     }
     catch(Exception e ){
-        Toast.makeText(MapsActivity.this,"An error has occured",Toast.LENGTH_SHORT);
+        Toast.makeText(MapsActivity.this,getResources().getString(R.string.error),Toast.LENGTH_SHORT);
 
     }
         return true;

@@ -37,12 +37,12 @@ public class DetailStop extends AppCompatActivity {
         LinearLayout linesContainer = (LinearLayout) findViewById(R.id.lines_container);
         final LinearLayout waysContainer = (LinearLayout) findViewById(R.id.way_container);
         final LinearLayout  scheduleContainer = (LinearLayout) findViewById(R.id.schedules_container);
-
+        try {
         TextView title = (TextView) findViewById(R.id.title);
         title.setText(stop.getLabel());
        final LocalDateTime localDateTime = new LocalDateTime();
 
-        try {
+
             for (final Map.Entry<Long, HashMap<String, List<DateTime>>> lineEntry : scheduleByWayByLine.entrySet()) {
                 Button lineButton = new Button(this.getApplicationContext());
                 lineButton.setText(lineEntry.getKey().toString());

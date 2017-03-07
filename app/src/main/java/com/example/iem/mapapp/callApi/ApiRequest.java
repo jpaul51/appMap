@@ -1,10 +1,9 @@
 package com.example.iem.mapapp.callApi;
 
-import com.example.iem.mapapp.JtsObjectMapper;
+import com.example.iem.mapapp.CustomObjectMapper;
 import com.example.iem.mapapp.model.Line;
 import com.example.iem.mapapp.model.LinesAndStops;
 import com.example.iem.mapapp.model.Stop;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.BufferedReader;
@@ -12,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -40,7 +38,7 @@ public class ApiRequest {
         String url = ip_url + "/getlinesname";
         try {
             String response = httpRequest(url);
-            ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
+            ObjectMapper mapper = CustomObjectMapper.JtsObjectMapper();
             List<String> nameLines = mapper.readValue(response,List.class);
             String retour[] = new String[nameLines.size()];
             for(int i = 0 ; i < nameLines.size(); i++){
@@ -58,7 +56,7 @@ public class ApiRequest {
         String url = ip_url + "/getlinesname";
         try {
             String response = httpRequest(url);
-            ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
+            ObjectMapper mapper = CustomObjectMapper.JtsObjectMapper();
             List<String> nameLines = mapper.readValue(response,List.class);
             return nameLines;
         }catch (Exception e){
@@ -73,7 +71,7 @@ public class ApiRequest {
         String url ="/getLinesByName?name=" + name;
         try {
             String response = httpRequest(url);
-            ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
+            ObjectMapper mapper = CustomObjectMapper.JtsObjectMapper();
             Line line  = mapper.readValue(response,Line.class);
             return line;
         }catch (Exception e){
@@ -87,7 +85,7 @@ public class ApiRequest {
         String url = "/getStopsAroudMe?";
         try {
             String response = httpRequest(url);
-            ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
+            ObjectMapper mapper = CustomObjectMapper.JtsObjectMapper();
             List<Stop> stopList = mapper.readValue(response,List.class);
             return stopList;
         }catch (Exception e){
@@ -101,7 +99,7 @@ public class ApiRequest {
         String url = "/getShortestWayBetween?start="+firstStop+"&end="+secondStop;
         String response = httpRequest(url);
 
-        ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
+        ObjectMapper mapper = CustomObjectMapper.JtsObjectMapper();
         LinesAndStops result = new LinesAndStops();
         if(mapper != null && response !=null)
         {
