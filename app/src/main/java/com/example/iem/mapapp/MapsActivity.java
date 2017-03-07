@@ -237,13 +237,18 @@ public class MapsActivity extends AbstractMapActivity
                 try {
                    final  LinesAndStops linesAndStops = (LinesAndStops) apiRequest.getShortestWaybetween(firstStop.getText().toString(), endStop.getText().toString());
                     // System.out.println(stops.size());
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            loadRoad(linesAndStops);
-                        }
-                    });
-
+                    if(linesAndStops.getLines().isEmpty() || linesAndStops.getStops().isEmpty())
+                    {
+                        Toast.makeText(MapsActivity.this,"These stops couldn't be found. Sorry",Toast.LENGTH_LONG);
+                    }
+                    else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                loadRoad(linesAndStops);
+                            }
+                        });
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
