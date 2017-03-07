@@ -165,8 +165,6 @@ public class MapsActivity extends AbstractMapActivity
                 public void onClick(View view) {
                     if(isSignIn){
                         signOut();
-                        signOut.setVisibility(View.GONE);
-                        signInButtonGoogle.setVisibility(View.VISIBLE);
                     }
                 }
             });
@@ -200,10 +198,14 @@ public class MapsActivity extends AbstractMapActivity
                 public void onTabSelected(@IdRes int tabId) {
                     switch (tabId){
                         case R.id.tab_ligne:
+                            toolbarChoixLigne.setVisibility(View.VISIBLE);
+                            toolbarRechercheTrajet.setVisibility(View.GONE);
                             selectLine = true;
                             updateUI(isSignIn);
                             break;
                         case R.id.tab_direction:
+                            toolbarChoixLigne.setVisibility(View.GONE);
+                            toolbarRechercheTrajet.setVisibility(View.VISIBLE);
                             selectLine = false;
                             updateUI(isSignIn);
                             loadAutoCompletion();
