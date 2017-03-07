@@ -21,7 +21,7 @@ import java.util.List;
 
 public class ApiRequest {
     private static ApiRequest ourInstance = new ApiRequest();
-    private String ip_url ="http://172.31.247.239:8080";
+    private String ip_url ="http://jonas-paul.me:8080";
 
 
     public static ApiRequest getInstance() {
@@ -120,6 +120,7 @@ public class ApiRequest {
 
     public String httpRequest(String url){
         BufferedReader in;
+        String response= null;
         System.out.println("URL: "+ip_url+"||"+url);
         try {
 
@@ -127,23 +128,22 @@ public class ApiRequest {
             URL urlGetNetwork = new URL(ip_url + url);
             HttpURLConnection urlConnection = (HttpURLConnection) urlGetNetwork.openConnection();
             String readLine="";
-            String response="";
             System.out.println("OK ? "+urlConnection.getResponseCode());
             if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 in = new BufferedReader(
                         new InputStreamReader(urlConnection.getInputStream()));
-
+                response = "";
                 while ((readLine = in.readLine()) != null) {
                     response+=readLine;
                 }
                 System.out.println("Réponse: "+response);
                 in.close();
-                return response;
             }
         }catch (Exception e){
+            response = null;
             System.out.println("ERROR: "+e.getMessage());
             e.printStackTrace();
         }
-        return null;
+        return response;
     }
 }

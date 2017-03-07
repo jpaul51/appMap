@@ -2,6 +2,7 @@ package com.example.iem.mapapp.activity;
 
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -29,8 +30,7 @@ public class SplashScreen extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Object[] params) {
-          //  namesLines = apiRequest.getLinesNames();
-            //System.out.println("RETOUR: " + namesLines.toString());
+            SystemClock.sleep(1000);
             return null;
         }
 

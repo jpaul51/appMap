@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
@@ -121,6 +123,7 @@ public class MapsActivity extends AbstractMapActivity
     private HashMap<Marker,Stop> stopsByMarkerRoad;
 
     private  MapWrapperLayout wrapper;
+    private ConnectivityManager connectivityManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,6 +168,8 @@ public class MapsActivity extends AbstractMapActivity
                     }
                 }
             });
+
+
 
 
             /*exemple d'implementation
@@ -228,7 +233,11 @@ public class MapsActivity extends AbstractMapActivity
             btnSearch.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    findShortestWay();
+                    connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+                    if(connectivityManager.getActiveNetworkInfo().isConnected())
+                        findShortestWay();
+                    else
+                        Toast.makeText(getApplicationContext(),getResources().getString(R.string.connectionError),Toast.LENGTH_LONG);
                 }
             });
 
@@ -270,9 +279,11 @@ public class MapsActivity extends AbstractMapActivity
             @Override
             public void run() {
                 try {
-                   final  LinesAndStops linesAndStops = (LinesAndStops) apiRequest.getShortestWaybetween(firstStop.getText().toString(), endStop.getText().toString());
+                    String start = firstStop.getText().toString().trim().replace(" ","+");
+                    String end = endStop.getText().toString().trim().replace(" ","+");
+                   final  LinesAndStops linesAndStops = (LinesAndStops) apiRequest.getShortestWaybetween(start,end);
 
-                    if(linesAndStops.getLines().isEmpty() || linesAndStops.getStops().isEmpty())
+                    if(linesAndStops == null &&(linesAndStops.getLines().isEmpty() || linesAndStops.getStops().isEmpty()))
                     {
                         Toast.makeText(MapsActivity.this,"These stops couldn't be found. Sorry",Toast.LENGTH_LONG);
                     }

@@ -78,7 +78,12 @@ public class DetailStop extends AppCompatActivity {
 
                                         if (display) {
                                             TextView oneSchedule = new TextView(DetailStop.this.getApplicationContext());
-                                            oneSchedule.setText(upcomingDates.getHourOfDay() + ":" + upcomingDates.getMinuteOfHour());
+                                            String minute = "";
+                                            if( upcomingDates.getMinuteOfHour() <10)
+                                                minute = "0";
+                                            minute += upcomingDates.getMinuteOfHour();
+                                            oneSchedule.setText(upcomingDates.getHourOfDay() + ":" + minute);
+                                            oneSchedule.setTextColor(Color.BLACK);
                                             scheduleContainer.addView(oneSchedule);
                                         }
                                     }

@@ -3,24 +3,17 @@ package com.example.iem.mapapp.model;
 
 
 import com.vividsolutions.jts.geom.MultiLineString;
-
 import java.io.Serializable;
-
 /**
  * Created by iem on 28/02/2017.
  */
-
 public class Line implements Serializable{
-
     Long id;
     String label;
     String color;
-
     MultiLineString lines=null;
     String kml_path;
-
     public Line(){
-
         lines=null;
     }
     public Line(long id)
@@ -60,17 +53,21 @@ public class Line implements Serializable{
         this.lines = lines;
     }
 
+    public String getKml_path() {
+        return kml_path;
+    }
+
+    public void setKml_path(String kml_path) {
+        this.kml_path = kml_path;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         Line line = (Line) o;
-
         return id.equals(line.id);
-
     }
-
     @Override
     public int hashCode() {
         int result = id.hashCode();
