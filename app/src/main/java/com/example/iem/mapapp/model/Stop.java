@@ -1,5 +1,7 @@
 package com.example.iem.mapapp.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.geojson.Point;
 
 import java.io.Serializable;
@@ -14,12 +16,13 @@ public class Stop implements Serializable {
 
     long id;
     String label;
-    Point point;
+    transient  Point point;
     Boolean firstDirection;
     Boolean secondDirection;
 
     HashMap<Long,HashMap<String,Integer>> orderInLineByWay;
-    List<Line> lines;
+    @JsonProperty("linesId")
+    List<Long> lines;
     List<Long> neighboursId;
     List<Schedule> schedules;
 
@@ -43,7 +46,7 @@ public class Stop implements Serializable {
 
 
 
-    public Stop(long id, String label, Point point, Boolean firstDirection, Boolean secondDirection, List<Line> lines,
+    public Stop(long id, String label, Point point, Boolean firstDirection, Boolean secondDirection, List<Long> lines,
                 List<Long> neighbours, List<Schedule> schedules) {
         super();
         this.id = id;
@@ -57,7 +60,7 @@ public class Stop implements Serializable {
     }
 
     public Stop(long id, String label, Point point, Boolean firstDirection, Boolean secondDirection,
-                HashMap<Long, HashMap<String,Integer>> orderInLineByWay, List<Line> lines, List<Long> neighbours,
+                HashMap<Long, HashMap<String,Integer>> orderInLineByWay, List<Long> lines, List<Long> neighbours,
                 List<Schedule> schedules) {
         super();
         this.id = id;
@@ -71,7 +74,7 @@ public class Stop implements Serializable {
         this.schedules = schedules;
     }
 
-    public Stop(long id, String label, Point point, List<Line> lines, List<Long> neighbours,
+    public Stop(long id, String label, Point point, List<Long> lines, List<Long> neighbours,
                 List<Schedule> schedules) {
         super();
         this.id = id;
@@ -82,7 +85,7 @@ public class Stop implements Serializable {
         this.schedules = schedules;
     }
 
-    public Stop(long id, String label, Point point, List<Line> lines, List<Long> neighbours) {
+    public Stop(long id, String label, Point point, List<Long> lines, List<Long> neighbours) {
         super();
         this.id = id;
         this.label = label;
@@ -91,7 +94,7 @@ public class Stop implements Serializable {
         this.neighboursId = neighbours;
     }
 
-    public Stop(long id, String label, Point point, List<Line> lines) {
+    public Stop(long id, String label, Point point, List<Long> lines) {
         super();
         this.id = id;
         this.label = label;
@@ -162,11 +165,11 @@ public class Stop implements Serializable {
         this.point = point;
     }
 
-    public List<Line> getLines() {
+    public List<Long> getLines() {
         return lines;
     }
 
-    public void setLines(List<Line> lines) {
+    public void setLines(List<Long> lines) {
         this.lines = lines;
     }
 

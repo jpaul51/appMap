@@ -1,5 +1,6 @@
 package com.example.iem.mapapp;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -13,14 +14,19 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.example.iem.mapapp.activity.DetailStop;
+import com.example.iem.mapapp.activity.MapWrapperLayout;
 import com.example.iem.mapapp.callApi.ApiRequest;
 import com.example.iem.mapapp.interfaces.CallbackButtonClick;
 import com.example.iem.mapapp.listener.ButtonCliqueListener;
 import com.example.iem.mapapp.model.Line;
 import com.example.iem.mapapp.model.LinesAndStops;
+import com.example.iem.mapapp.model.Schedule;
+import com.example.iem.mapapp.model.Stop;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -39,24 +45,31 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.MarkerManager;
 import com.roughike.bottombar.BottomBar;
 import com.roughike.bottombar.OnTabSelectListener;
 import com.vividsolutions.jts.geom.LineString;
 
+import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.example.iem.mapapp.utils.Constante.RC_SIGN_IN;
 
 
 public class MapsActivity extends AbstractMapActivity
         implements OnMapReadyCallback,OnInfoWindowClickListener,
-        CallbackButtonClick, GoogleApiClient.OnConnectionFailedListener {
+        CallbackButtonClick, GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMarkerClickListener {
 
     //maps
     private GoogleMap mMap;
@@ -86,6 +99,7 @@ public class MapsActivity extends AbstractMapActivity
     private List<ButtonCliqueListener> listeners;
    // private List<Integer> listLineDisplay;
     private HashMap<Integer,List<Polyline>> displayedLines;
+    private HashMap<Stop,Marker> displayedMarkers;
     private SignInButton signInButtonGoogle;
     private GoogleApiClient mGoogleApiClient;
     private GoogleSignInAccount account;
@@ -94,8 +108,12 @@ public class MapsActivity extends AbstractMapActivity
     private boolean selectLine = true;
     private String messageIndicatif;
 
+    private PopupAdapter popupAdapter;
+    private HashMap<Marker,HashMap<Long,HashMap<String,List<DateTime>>>> infowindowContentByMarker;
+    private HashMap<Marker,Stop> stopsByMarker;
 
 
+    private  MapWrapperLayout wrapper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +123,8 @@ public class MapsActivity extends AbstractMapActivity
 
             initUIComponent();
             updateUI(false);
+
+
 
             toolbarMain.setTitle("TUB");
             setSupportActionBar(toolbarMain);
@@ -136,6 +156,9 @@ public class MapsActivity extends AbstractMapActivity
             listeners = new ArrayList<>();
           //  listLineDisplay = new ArrayList<>();
             displayedLines = new HashMap<>();
+            displayedMarkers = new HashMap<>();
+            infowindowContentByMarker = new HashMap<>();
+            stopsByMarker = new HashMap<>();
            // listLineDisplayPolyline = new ArrayList<>();
             for (int i = 0; i < 8; i++) {
                 listeners.add(new ButtonCliqueListener(this,i));
@@ -176,8 +199,40 @@ public class MapsActivity extends AbstractMapActivity
                 needsInit = true;
             }
 
+
+            ImageButton btnSearch = (ImageButton) findViewById(R.id.btnSearch);
+            btnSearch.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    findShortestWay();
+                }
+            });
+
             mapFragment.getMapAsync(this);
         }
+    }
+
+
+
+    private void findShortestWay()
+    {
+
+        final TextView firstStop = (TextView) findViewById(R.id.tv_entrerNomLigneDepart);
+        final TextView endStop = (TextView) findViewById(R.id.tv_entrerNomLigneArriver);
+
+        System.out.println("Let's find the shortest way");
+
+       new Thread(new Runnable() {
+           @Override
+           public void run() {
+               try {
+                   List<Stop> stops = apiRequest.getShortestWaybetween(firstStop.getText().toString(), endStop.getText().toString());
+                   System.out.println(stops.size());
+               } catch (IOException e) {
+                   e.printStackTrace();
+               }
+           }
+       }).start();
     }
 
     private void initUIComponent(){
@@ -314,12 +369,22 @@ public class MapsActivity extends AbstractMapActivity
     public void onMapReady(GoogleMap googleMap) {
         loadNetwork.start();
         mMap = googleMap;
+        mMap.setOnMarkerClickListener(this);
+        LatLng bourgEnBresse = new LatLng(46.2052, 5.2255);
+         wrapper = (MapWrapperLayout) findViewById(R.id.wrapper);
+        wrapper.init(mMap,getPixelsFromDp(this, 39 + 20));
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(bourgEnBresse.latitude, bourgEnBresse.longitude), 12.0f));
+
         checkPermission();
     }
 
 
 
-
+    public static int getPixelsFromDp(Context context, float dp) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int)(dp * scale + 0.5f);
+    }
 
     private String getFileName(String file){
 
@@ -389,14 +454,9 @@ public class MapsActivity extends AbstractMapActivity
             LatLng centerOfBourg = new LatLng(46.202181, 5.237056);
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(centerOfBourg,zoomLevel));
         }
-        mMap.setInfoWindowAdapter(new PopupAdapter(getLayoutInflater()));
+        popupAdapter = new PopupAdapter(getLayoutInflater());
+        mMap.setInfoWindowAdapter(popupAdapter);
         mMap.setOnInfoWindowClickListener(this);
-    }
-    private void addMarker(GoogleMap map, double lat, double lon,
-                           int title, int snippet) {
-        map.addMarker(new MarkerOptions().position(new LatLng(lat, lon))
-                .title(getString(title))
-                .snippet(getString(snippet)));
     }
 
     private void moveButtonLocation(){
@@ -417,18 +477,32 @@ public class MapsActivity extends AbstractMapActivity
 
 
 
+
     @Override
     public void onInfoWindowClick(Marker marker) {
+        System.out.println("CLICK");
         int u =1;
         u++;
     }
 
     @Override
     public void displayLine(int number) {
+
+
+
         System.out.println("We here");
         if(linesAndStops != null){
             System.out.println("YES");
-            Line line = linesAndStops.getLines().get(number);
+
+           // Line line = linesAndStops.getLines().get(number);
+            Line line = new Line();
+            for(Line aLine : linesAndStops.getLines())
+            {
+                if(aLine.getId()==number+1)
+                    line=aLine;
+            }
+
+            System.out.println(line.getId());
             LineString aLine=null;
             ArrayList<Polyline> polyLines = new ArrayList<>();
             for (int i=0; i < line.getLines().getNumGeometries();i++ ) {
@@ -443,22 +517,116 @@ public class MapsActivity extends AbstractMapActivity
                // listLineDisplayPolyline.add(polyline);
 
             }
-            displayedLines.put(number,polyLines);
+            displayedLines.put(number+1,polyLines);
             //listLineDisplay.add(number);
+
+            ArrayList<Stop> stops = (ArrayList<Stop>) linesAndStops.getStops();
+
+            for(Stop s : stops)
+            {
+                //addMarker(mMap,s.getPoint().getCoordinates().getLatitude(),s.getPoint().getCoordinates().getLongitude(),"test",1);
+               // System.out.println("LINES: "+s.getLines() + " NUMBER: "+number+ " EQUALS: "+ s.getLines().contains((long)number));
+              if(s.getLines().contains((long)number+1)) {
+                  MarkerOptions opt = new MarkerOptions()
+                          .position(new LatLng(s.getPoint().getCoordinates().getLongitude(), s.getPoint().getCoordinates().getLatitude()))
+                          .title(s.getLabel());
+
+                  String oldSnippet = "";
+
+                  HashMap<Long,HashMap<String,List<DateTime>>> scheduleByWayByLine = new HashMap<>();
+                for(Schedule schedule : s.getSchedules())
+                {
+                    HashMap<String,List<DateTime>> scheduleByWay = scheduleByWayByLine.get(schedule.getLine());
+                    if(scheduleByWay==null) {
+                        scheduleByWay = new HashMap<>();
+                        scheduleByWayByLine.put(schedule.getLine(),scheduleByWay);
+                    }
+                    scheduleByWay.put(schedule.getway(),schedule.getSchedules());
+
+                }
+
+//                      for (DateTime time : s.getSchedules().get(scheduleNumber).getSchedules()) {
+//                          if (opt.getSnippet() != null)
+//                              oldSnippet = opt.getSnippet();
+//                          if (time.getHourOfDay() == localDateTime.getHourOfDay()) {
+//                              if (time.getMinuteOfHour() > localDateTime.getMinuteOfHour()) {
+//                                  opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
+//                              }
+//                          } else if (time.getHourOfDay() > localDateTime.getHourOfDay()) {
+//                              opt.snippet(oldSnippet + time.getHourOfDay() + ":" + time.getMinuteOfHour() + "\n");
+//                          }
+//                      }
+
+                if(!displayedMarkers.containsKey(s)) {
+                    Marker marker = mMap.addMarker(opt);
+                    stopsByMarker.put(marker,s);
+                    infowindowContentByMarker.put(marker,scheduleByWayByLine);
+                    displayedMarkers.put(s, marker);
+                }
+
+              }
+            }
+
         }
     }
 
     @Override
     public void removeLine(int number) {
-        System.out.println("We here");
+    number+=1;
 
-        ArrayList<Polyline> polylines = (ArrayList<Polyline>) displayedLines.get(number);
 
-        for(Polyline aLine : polylines)
+        Iterator<Polyline> polylineIterator = displayedLines.get(number).iterator();
+
+        while(polylineIterator.hasNext())
         {
+            Polyline aLine = polylineIterator.next();
             aLine.remove();
+            polylineIterator.remove();
+
         }
+        System.out.println("REMOVE: "+number);
+        displayedLines.remove(number);
+
+        Iterator<Map.Entry<Stop,Marker>> markerIterator = displayedMarkers.entrySet().iterator();
+
+        while(markerIterator.hasNext())
+        {
+            Map.Entry<Stop,Marker> markerEntry = markerIterator.next();
+            Stop s = markerEntry.getKey();
+            if(s.getLines().contains((long)number))
+            {
+                System.out.println("Stop belongs to "+s.getLines()+", deleting line "+(number));
+                System.out.println("DisplayedLines: "+displayedLines.keySet());
+                boolean markerShouldBeRemoved=true;
+                for(int i=0;i<displayedLines.size();i++)
+                {
+                  //  System.out.print(s.getLines().contains((long)i+1) +" ");
+                        markerShouldBeRemoved &= !s.getLines().contains((long)i);
+                }
+                System.out.println("Should be removed: "+markerShouldBeRemoved);
+                if(markerShouldBeRemoved) {
+                    Marker markerWeWantToRemove = markerEntry.getValue();
+                    markerWeWantToRemove.remove();
+                    markerIterator.remove();
+                }
+
+            }
+        }
+
     }
 
 
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+//        popupAdapter.setScheduleByWayByLine(infowindowContentByMarker.get(marker));
+//        popupAdapter.wrapper=this.wrapper;
+//         marker.showInfoWindow();
+
+        Intent intent = new Intent(MapsActivity.this, DetailStop.class);
+        intent.putExtra("stopData",infowindowContentByMarker.get(marker));
+        intent.putExtra("stopObject",stopsByMarker.get(marker));
+        startActivity(intent);
+        return true;
+    }
 }

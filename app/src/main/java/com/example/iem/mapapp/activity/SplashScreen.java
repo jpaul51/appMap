@@ -29,7 +29,7 @@ public class SplashScreen extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Object[] params) {
-            namesLines = apiRequest.getLinesNames();
+          //  namesLines = apiRequest.getLinesNames();
             //System.out.println("RETOUR: " + namesLines.toString());
             return null;
         }

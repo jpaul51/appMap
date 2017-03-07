@@ -1,16 +1,20 @@
 package com.example.iem.mapapp.callApi;
 
 import com.example.iem.mapapp.JtsObjectMapper;
+import com.example.iem.mapapp.model.Line;
+import com.example.iem.mapapp.model.Stop;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
-import app.model.Line;
-import app.model.Stop;
+
 
 /**
  * Created by iem on 02/12/2016.
@@ -18,7 +22,7 @@ import app.model.Stop;
 
 public class ApiRequest {
     private static ApiRequest ourInstance = new ApiRequest();
-    private String ip_url ="http://172.16.1.159:8080";
+    private String ip_url ="http://172.31.247.239:8080";
 
 
     public static ApiRequest getInstance() {
@@ -92,6 +96,22 @@ public class ApiRequest {
         return null;
     }
 
+    public List<Stop> getShortestWaybetween(String firstStop, String secondStop) throws IOException {
+        String url = "/getShortestWayBetween?start="+firstStop+"&end="+secondStop;
+        String response = httpRequest(url);
+
+        ObjectMapper mapper = JtsObjectMapper.JtsObjectMapper();
+        ArrayList<Stop> way = new ArrayList<>();
+        if(mapper != null && response !=null)
+        {
+            way = mapper.readValue(response,new TypeReference<List<Stop>>(){});
+        }
+
+        return way;
+
+    }
+
+
     public String getlinesAndStops(){
         String url = "/getlinesandstops";
         String response = httpRequest(url);
@@ -109,6 +129,7 @@ public class ApiRequest {
             HttpURLConnection urlConnection = (HttpURLConnection) urlGetNetwork.openConnection();
             String readLine="";
             String response="";
+            System.out.println("OK ? "+urlConnection.getResponseCode());
             if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 in = new BufferedReader(
                         new InputStreamReader(urlConnection.getInputStream()));

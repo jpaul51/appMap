@@ -60,4 +60,24 @@ public class Line implements Serializable{
         this.lines = lines;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Line line = (Line) o;
+
+        return id.equals(line.id);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + (label != null ? label.hashCode() : 0);
+        result = 31 * result + (color != null ? color.hashCode() : 0);
+        result = 31 * result + (lines != null ? lines.hashCode() : 0);
+        result = 31 * result + (kml_path != null ? kml_path.hashCode() : 0);
+        return result;
+    }
 }

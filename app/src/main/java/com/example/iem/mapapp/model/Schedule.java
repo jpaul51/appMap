@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.List;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.datatype.joda.deser.DateTimeDeserializer;
 import com.fasterxml.jackson.datatype.joda.deser.LocalDateDeserializer;
@@ -20,7 +21,8 @@ public class Schedule implements Serializable{
     List<DateTime> schedules;
     List<String> constraints;
     String way;
-    Line line;//Contains multiLineString, to remove
+    @JsonProperty("lineItBelongs")
+    Long line;
     Boolean schoolPeriod=true;
 
     public Schedule() {
@@ -29,7 +31,7 @@ public class Schedule implements Serializable{
 
     }
 
-    public Schedule(List<DateTime> schedules, List<String> constraints, String way, Line line, Boolean schoolPeriod) {
+    public Schedule(List<DateTime> schedules, List<String> constraints, String way, Long line, Boolean schoolPeriod) {
 
         super();
 
@@ -45,7 +47,7 @@ public class Schedule implements Serializable{
 
     }
 
-    public Schedule(List<DateTime> schedules, String way, Line line, Boolean schoolPeriod) {
+    public Schedule(List<DateTime> schedules, String way, long line, Boolean schoolPeriod) {
 
         super();
 
@@ -59,7 +61,7 @@ public class Schedule implements Serializable{
 
     }
 
-    public Schedule(String way, Line line, Boolean schoolPeriod) {
+    public Schedule(String way, long line, Boolean schoolPeriod) {
 
         super();
 
@@ -71,7 +73,7 @@ public class Schedule implements Serializable{
 
     }
 
-    public Schedule(long id, List<DateTime> schedules, String way, Line line, Boolean schoolPeriod) {
+    public Schedule(long id, List<DateTime> schedules, String way, long line, Boolean schoolPeriod) {
 
         super();
 
@@ -87,7 +89,7 @@ public class Schedule implements Serializable{
 
     }
 
-    public Schedule(long id, List<DateTime> schedules, String way, Line line) {
+    public Schedule(long id, List<DateTime> schedules, String way, long line) {
 
         super();
 
@@ -165,13 +167,13 @@ public class Schedule implements Serializable{
 
 
 
-    public Line getLine() {
+    public long getLine() {
 
         return line;
 
     }
 
-    public void setLine(Line line) {
+    public void setLine(long line) {
 
         this.line = line;
 
