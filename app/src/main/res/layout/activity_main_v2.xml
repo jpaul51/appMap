@@ -24,22 +24,34 @@
                 android:layout_height="match_parent">
 
                 <TextView
-                    android:text="TextView"
+                    android:id="@+id/textInformation"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_alignParentTop="true"
-                    android:id="@+id/textInformation"
-                    android:layout_toLeftOf="@+id/google_sign_in_button"
-                    android:paddingTop="3dp" />
+                    android:layout_marginRight="55dp"
+                    android:paddingTop="3dp"
+                    android:text="TextView" />
 
                 <com.google.android.gms.common.SignInButton
-                    android:text="Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:id="@+id/google_sign_in_button"
-                    android:layout_centerVertical="true"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
-                    android:layout_alignParentEnd="true" />
+                    android:layout_centerVertical="true" />
+
+                <Button
+                    android:id="@+id/bt_disconnect"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:background="@drawable/ic_action_disconnect"
+                    android:visibility="gone" />
+
+
+
 
 
             </RelativeLayout>
@@ -72,6 +84,7 @@
 
     <com.example.iem.mapapp.activity.MapWrapperLayout
         android:id="@+id/wrapper"
+        android:layout_below="@+id/contentBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
     <fragment
